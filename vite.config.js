@@ -6,6 +6,14 @@ export default defineConfig({
   plugins: [VitePWA({
     registerType: 'autoUpdate',
     includeAssets: ['favicon.svg'],
+    workbox: {
+      // keep the cartoon fonts available offline after the first visit
+      runtimeCaching: [{
+        urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/,
+        handler: 'CacheFirst',
+        options: { cacheName: 'google-fonts', expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 }, cacheableResponse: { statuses: [0, 200] } }
+      }]
+    },
     manifest: {
       name: 'Redhaven: Mars Colony',
       short_name: 'Redhaven',

@@ -609,8 +609,9 @@ export class GameScene {
   }
   pan(dx, dy) {
     const scale = 18 / Math.min(this.container.clientWidth, this.container.clientHeight) / this.zoom;
-    this.target.x = THREE.MathUtils.clamp(this.target.x + (-dx + dy) * scale, 3, SIZE - 3);
-    this.target.z = THREE.MathUtils.clamp(this.target.z + (dx + dy) * scale, 3, SIZE - 3);
+    // the map follows the finger: screen-right is world (+x, -z), screen-down is (+x, +z)
+    this.target.x = THREE.MathUtils.clamp(this.target.x + (-dx - dy) * scale, 3, SIZE - 3);
+    this.target.z = THREE.MathUtils.clamp(this.target.z + (dx - dy) * scale, 3, SIZE - 3);
     this.updateCamera();
   }
   setZoom(value) { this.zoom = THREE.MathUtils.clamp(value, .65, 3); this.resize(); }

@@ -1,6 +1,10 @@
 import './style.css';
 import { BUILDINGS, EVENT_CHOICES, SAVE_KEY, canBuild, loadGame, markNode, newGame, placeBuilding, resolveEvent, saveGame, stepGame } from './game.js';
 import { GameScene } from './scene.js';
+import { icon } from './icons.js';
+
+const RESOURCES = ['timber', 'metal', 'food', 'power'];
+const LOG_BADGE = { good: '✓', warning: '!', danger: '!', info: 'i' };
 
 const app = document.querySelector('#app');
 app.innerHTML = `
@@ -8,57 +12,54 @@ app.innerHTML = `
     <div id="viewport" class="viewport" aria-label="3D colony map"></div>
     <div class="vignette"></div>
     <header class="topbar">
-      <div class="brand"><div class="brand-mark">R</div><div><strong>REDHAVEN</strong><small>THE MARTIAN FRONTIER</small></div></div>
+      <div class="brand"><div class="brand-mark">${icon('planet')}</div><div><strong>REDHAVEN</strong><small>Martian Frontier</small></div></div>
       <div class="resources" aria-label="Colony resources">
-        <div class="resource"><span class="resource-icon timber">▥</span><span><b id="timber">0</b><small>TIMBER</small></span></div>
-        <div class="resource"><span class="resource-icon metal">⬡</span><span><b id="metal">0</b><small>METAL</small></span></div>
-        <div class="resource"><span class="resource-icon food">✿</span><span><b id="food">0</b><small>FOOD</small></span></div>
-        <div class="resource"><span class="resource-icon power">ϟ</span><span><b id="power">0</b><small>POWER</small></span></div>
+        ${RESOURCES.map(r => `<div class="resource res-${r}" id="res-${r}">${icon(r)}<span><b id="${r}">0</b><small>${r}</small></span></div>`).join('')}
       </div>
-      <div class="top-actions"><span id="day" class="day-pill">DAY 01</span><button id="menuBtn" class="icon-btn" title="Menu" aria-label="Menu">☰</button></div>
+      <div class="top-actions"><span class="day-pill">${icon('sun')}<span id="day">DAY 01</span></span><button id="menuBtn" class="icon-btn" title="Menu" aria-label="Menu">${icon('menu')}</button></div>
     </header>
     <aside class="left-panel">
-      <div class="eyebrow">COLONY STATUS</div>
+      <div class="eyebrow">Colony status</div>
       <h2 id="colonyTitle">A new beginning</h2>
       <p id="objective" class="objective"></p>
-      <div class="status-row"><span class="status-dot"></span><span id="weather">Clear skies</span><span id="population">4 colonists</span></div>
-      <div class="progress-caption"><span>EXPEDITION</span><span id="progressText">0%</span></div>
+      <div class="status-row"><span class="weather-chip"><span class="status-dot"></span><span id="weather">Clear skies</span></span><span id="population">4 colonists</span></div>
+      <div class="progress-caption"><span>Expedition</span><span id="progressText">0%</span></div>
       <div class="progress-track"><div id="progressBar"></div></div>
       <div class="panel-divider"></div>
-      <div class="eyebrow">CREW</div>
+      <div class="eyebrow eyebrow-pink">Crew</div>
       <div id="crew" class="crew-list"></div>
     </aside>
     <aside class="right-panel">
-      <div class="panel-heading"><span class="eyebrow">FIELD REPORT</span><span class="live-dot">● LIVE</span></div>
+      <div class="panel-heading"><span class="eyebrow eyebrow-orange">Field report</span><span class="live-dot">LIVE</span></div>
       <div id="log" class="event-list" aria-live="polite"></div>
-      <div id="inspect" class="inspect-box"><span class="eyebrow">INSPECT</span><p>Tap a tile, building or crew member for details.</p></div>
+      <div id="inspect" class="inspect-box"><span class="eyebrow eyebrow-teal">Inspect</span><p>Tap a tile, building or crew member for details.</p></div>
     </aside>
-    <div class="camera-controls"><button id="zoomIn" class="small-btn" title="Zoom in">+</button><button id="zoomOut" class="small-btn" title="Zoom out">−</button></div>
+    <div class="camera-controls"><button id="zoomIn" class="small-btn" title="Zoom in" aria-label="Zoom in">${icon('plus')}</button><button id="zoomOut" class="small-btn" title="Zoom out" aria-label="Zoom out">${icon('minus')}</button></div>
     <footer class="bottom-bar">
-      <div class="tool-section"><span class="eyebrow">TOOLS</span><div class="tool-buttons"><button class="tool active" data-tool="inspect">⌖ <span>Inspect</span></button><button class="tool" data-tool="gather">✦ <span>Gather</span></button></div></div>
-      <div class="build-section"><span class="eyebrow">CONSTRUCT</span><div id="buildCards" class="build-cards"></div></div>
-      <div class="time-section"><span class="eyebrow">TIME</span><button id="speedBtn" class="speed-btn"><span id="speedIcon">Ⅱ</span><small id="speedLabel">PAUSE</small></button></div>
+      <div class="tool-section"><span class="eyebrow">Tools</span><div class="tool-buttons"><button class="tool active" data-tool="inspect">${icon('inspect')}<span>Inspect</span></button><button class="tool" data-tool="gather">${icon('gather')}<span>Gather</span></button></div></div>
+      <div class="build-section"><span class="eyebrow eyebrow-orange">Build</span><div id="buildCards" class="build-cards"></div></div>
+      <div class="time-section"><span class="eyebrow eyebrow-purple">Time</span><button id="speedBtn" class="speed-btn"><span id="speedIcon"></span><small id="speedLabel">PAUSE</small></button></div>
     </footer>
     <div id="toast" class="toast" role="status"></div>
-    <div id="eventOverlay" class="overlay event-overlay hidden"><div class="choice-dialog"><div id="eventIcon" class="choice-icon"></div><div class="eyebrow">A MARTIAN MOMENT</div><h2 id="eventTitle"></h2><p id="eventText"></p><div id="eventChoices" class="choice-list"></div></div></div>
+    <div id="eventOverlay" class="overlay event-overlay hidden"><div class="choice-dialog"><div id="eventIcon" class="choice-icon"></div><div class="eyebrow eyebrow-teal">A Martian moment</div><h2 id="eventTitle"></h2><p id="eventText"></p><div id="eventChoices" class="choice-list"></div></div></div>
     <div id="startOverlay" class="overlay">
       <div class="start-card">
-        <div class="overline">A NEW WORLD IS WAITING</div>
-        <div class="large-mark">R<span>✦</span></div>
+        <div class="overline">A new world is waiting</div>
+        <div class="large-mark">${icon('planet')}</div>
         <h1>REDHAVEN</h1>
         <p class="subtitle">Build a home. Weather the storms. Survive together.</p>
         <div class="mode-grid">
-          <button id="expeditionBtn" class="mode-card"><span class="mode-icon">✦</span><strong>Expedition</strong><span>Build a signal beacon and secure your place on Mars.</span><em>GOAL DRIVEN →</em></button>
-          <button id="endlessBtn" class="mode-card"><span class="mode-icon">∞</span><strong>Endless Colony</strong><span>Grow freely and see how long your people can thrive.</span><em>SANDBOX →</em></button>
+          <button id="expeditionBtn" class="mode-card mode-expedition"><span class="mode-icon">${icon('rocket')}</span><strong>Expedition</strong><span>Build a signal beacon and secure your place on Mars.</span><em>Goal driven →</em></button>
+          <button id="endlessBtn" class="mode-card mode-endless"><span class="mode-icon">${icon('infinity')}</span><strong>Endless Colony</strong><span>Grow freely and see how long your people can thrive.</span><em>Sandbox →</em></button>
         </div>
         <button id="continueBtn" class="continue-btn" hidden>Continue saved colony →</button>
-        <div class="start-foot">LOW-POLY 3D · OFFLINE READY · SAVES ON THIS DEVICE</div>
+        <div class="start-foot">Low-poly 3D · Offline ready · Saves on this device</div>
       </div>
     </div>
     <div id="menuOverlay" class="overlay hidden">
-      <div class="dialog"><button id="closeMenu" class="dialog-close" aria-label="Close menu">×</button><div class="eyebrow">PAUSED AT THE FRONTIER</div><h2>Game menu</h2><p>Drag to move the camera. Pinch or scroll to zoom. Choose a building, then tap an empty tile to construct it. Mark rocks and trees for gathering.</p><div class="dialog-actions"><button id="saveBtn" class="primary-btn">Save colony</button><button id="newBtn" class="secondary-btn">New game</button></div><div id="saveStatus" class="save-status"></div></div>
+      <div class="dialog"><button id="closeMenu" class="dialog-close" aria-label="Close menu">${icon('close')}</button><div class="eyebrow eyebrow-purple">Paused at the frontier</div><h2>Game menu</h2><p>Drag to move the camera. Pinch or scroll to zoom. Choose a building, then tap an empty tile to construct it. Mark rocks and trees for gathering.</p><div class="dialog-actions"><button id="saveBtn" class="primary-btn">Save colony</button><button id="newBtn" class="secondary-btn">New game</button></div><div id="saveStatus" class="save-status"></div></div>
     </div>
-    <div id="endOverlay" class="overlay hidden"><div class="dialog end-dialog"><div class="eyebrow" id="endEyebrow"></div><h2 id="endTitle"></h2><p id="endText"></p><div class="dialog-actions"><button id="endNew" class="primary-btn">Start a new colony</button><button id="endClose" class="secondary-btn">View colony</button></div></div></div>
+    <div id="endOverlay" class="overlay hidden"><div class="dialog end-dialog"><div class="eyebrow eyebrow-orange" id="endEyebrow"></div><h2 id="endTitle"></h2><p id="endText"></p><div class="dialog-actions"><button id="endNew" class="primary-btn">Start a new colony</button><button id="endClose" class="secondary-btn">View colony</button></div></div></div>
   </main>`;
 
 const $ = (id) => document.getElementById(id);
@@ -71,12 +72,13 @@ let tool = 'inspect';
 let selected = null;
 let last = performance.now();
 let uiAt = 0, saveAt = 0, endShown = false, visibleEvent = null;
+const shownResources = {};
 
 const cardOrder = ['shelter', 'farm', 'solar', 'wall', 'turret', 'beacon'];
 $('buildCards').innerHTML = cardOrder.map(type => {
   const b = BUILDINGS[type];
-  const cost = Object.entries(b.cost).map(([r, n]) => `${n} ${r}`).join(' · ');
-  return `<button class="build-card" data-build="${type}" title="${b.detail}"><span class="build-icon">${b.icon}</span><strong>${b.name}</strong><small>${cost}</small></button>`;
+  const cost = Object.entries(b.cost).map(([r, n]) => `<span class="cost" data-res="${r}" data-n="${n}">${icon(r)}${n}</span>`).join('');
+  return `<button class="build-card" data-build="${type}" title="${b.detail}">${icon(type, 'build-icon')}<strong>${b.name}</strong><span class="costs">${cost}</span></button>`;
 }).join('');
 if (savedGame) $('continueBtn').hidden = false;
 
@@ -105,10 +107,20 @@ function start(mode) {
   $('startOverlay').classList.add('hidden');
   setTool('inspect');
   renderUI();
-  toast(mode === 'continue' ? 'Welcome back, commander.' : 'Welcome to habitable Mars. Build your colony.');
+  toast(mode === 'continue' ? 'Welcome back, commander!' : 'Welcome to habitable Mars. Build your colony!');
 }
 function renderUI() {
-  for (const key of ['timber', 'metal', 'food', 'power']) $(key).textContent = Math.floor(game.resources[key]);
+  for (const key of RESOURCES) {
+    const value = Math.floor(game.resources[key]);
+    if (shownResources[key] !== undefined && shownResources[key] !== value) {
+      const chip = $(`res-${key}`);
+      chip.classList.remove('bump', 'drop');
+      void chip.offsetWidth;
+      chip.classList.add(value > shownResources[key] ? 'bump' : 'drop');
+    }
+    shownResources[key] = value;
+    $(key).textContent = value;
+  }
   $('day').textContent = `DAY ${String(game.day).padStart(2, '0')}`;
   $('weather').textContent = game.weather;
   $('population').textContent = `${game.colonists.length} colonists`;
@@ -121,13 +133,21 @@ function renderUI() {
   const progress = expedition ? (beacon ? Math.min(100, 60 + game.beaconCharge / 30 * 40) : Math.min(60, game.day * 5)) : Math.min(100, game.day * 4);
   $('progressBar').style.width = `${progress}%`;
   $('progressText').textContent = expedition ? `${Math.floor(progress)}%` : `DAY ${game.day}`;
-  $('crew').innerHTML = game.colonists.map((c, i) => `<button class="crew-member" data-crew="${c.id}"><span class="avatar avatar-${i}">${c.name[0]}</span><span><strong>${c.name}</strong><small>${c.role} · ${c.task}</small></span><span class="health">${Math.max(0, Math.floor(c.hp))}%</span></button>`).join('') || '<p class="empty">No survivors.</p>';
-  $('log').innerHTML = game.eventLog.slice(0, 5).map(e => `<div class="event ${e.kind}"><span class="event-bullet"></span><span><small>DAY ${String(e.day).padStart(2, '0')}</small><p>${e.text}</p></span></div>`).join('');
+  $('crew').innerHTML = game.colonists.map(c => {
+    const hp = Math.max(0, Math.floor(c.hp));
+    return `<button class="crew-member" data-crew="${c.id}"><span class="avatar role-${c.role.toLowerCase()}">${c.name[0]}</span><span class="crew-info"><strong>${c.name}</strong><small>${c.role} · ${c.task}</small><span class="hp${hp < 40 ? ' low' : ''}"><i style="width:${hp}%"></i></span></span></button>`;
+  }).join('') || '<p class="empty">No survivors.</p>';
+  $('log').innerHTML = game.eventLog.slice(0, 5).map(e => `<div class="event ${e.kind}"><span class="event-badge">${LOG_BADGE[e.kind] ?? 'i'}</span><span><small>DAY ${String(e.day).padStart(2, '0')}</small><p>${e.text}</p></span></div>`).join('');
   document.querySelectorAll('.build-card').forEach(button => {
     const type = button.dataset.build;
     button.classList.toggle('unaffordable', Object.entries(BUILDINGS[type].cost).some(([r, n]) => game.resources[r] < n));
   });
-  $('speedIcon').textContent = speed === 0 ? '▶' : speed === 1 ? 'Ⅱ' : '»';
+  document.querySelectorAll('.cost').forEach(chip => chip.classList.toggle('short', game.resources[chip.dataset.res] < Number(chip.dataset.n)));
+  const speedState = speed === 0 ? 'play' : speed === 1 ? 'pause' : 'fast';
+  if ($('speedBtn').dataset.state !== speedState) {
+    $('speedBtn').dataset.state = speedState;
+    $('speedIcon').innerHTML = icon(speedState);
+  }
   $('speedLabel').textContent = speed === 0 ? 'PLAY' : speed === 1 ? 'PAUSE' : '3× SPEED';
 }
 function inspectTile(tile) {
@@ -140,7 +160,7 @@ function inspectTile(tile) {
   if (b) { title = BUILDINGS[b.type].name; detail = `${BUILDINGS[b.type].detail} Integrity ${Math.max(0, Math.ceil(b.hp))}/${BUILDINGS[b.type].hp}.`; }
   if (n) { title = n.type === 'rock' ? 'Metal deposit' : 'Martian grove'; detail = `${n.amount} resources remain. ${n.marked ? 'Marked for gathering.' : 'Use Gather to assign your crew.'}`; }
   if (c) { title = `${c.name} · ${c.role}`; detail = `${c.task}. Health ${Math.max(0, Math.floor(c.hp))}%.`; }
-  $('inspect').innerHTML = `<span class="eyebrow">INSPECT · ${tile.x + 1}, ${tile.z + 1}</span><h3>${title}</h3><p>${detail}</p>`;
+  $('inspect').innerHTML = `<span class="eyebrow eyebrow-teal">Inspect · ${tile.x + 1}, ${tile.z + 1}</span><h3>${title}</h3><p>${detail}</p>`;
   world.select(tile);
 }
 function clickTile(tile) {
@@ -148,7 +168,7 @@ function clickTile(tile) {
   if (BUILDINGS[tool]) {
     const error = placeBuilding(game, tool, tile.x, tile.z);
     if (error) toast(error);
-    else { world.sync(game); saveGame(game); inspectTile(tile); toast(`${BUILDINGS[tool].name} constructed.`); }
+    else { world.sync(game); saveGame(game); inspectTile(tile); toast(`${BUILDINGS[tool].name} constructed!`); }
   } else if (tool === 'gather') {
     if (!markNode(game, tile.x, tile.z)) toast('Select a tree or metal deposit.');
     world.sync(game); inspectTile(tile);
@@ -242,7 +262,8 @@ function frame(now) {
   if (started && game.pendingEvent && visibleEvent !== game.pendingEvent) {
     visibleEvent = game.pendingEvent;
     const event = EVENT_CHOICES[visibleEvent];
-    $('eventIcon').textContent = event.icon;
+    $('eventIcon').innerHTML = icon(visibleEvent);
+    $('eventIcon').dataset.kind = visibleEvent;
     $('eventTitle').textContent = event.title;
     $('eventText').textContent = event.text;
     $('eventChoices').innerHTML = event.choices.map((c, i) => `<button class="choice" data-choice="${i}"><strong>${c.label}</strong><small>${c.detail}</small></button>`).join('');
@@ -250,8 +271,8 @@ function frame(now) {
   }
   if (started && !endShown && (game.modeWon || game.gameOver)) {
     endShown = true; speed = 0; saveGame(game);
-    $('endEyebrow').textContent = game.modeWon ? 'EXPEDITION COMPLETE' : 'COLONY LOST';
-    $('endTitle').textContent = game.modeWon ? 'Mars heard your signal.' : 'The frontier endures.';
+    $('endEyebrow').textContent = game.modeWon ? 'Expedition complete' : 'Colony lost';
+    $('endTitle').textContent = game.modeWon ? 'Mars heard your signal!' : 'The frontier endures.';
     $('endText').textContent = game.modeWon ? `Your crew survived ${game.day} days and reached orbit. Their home on Mars lives on.` : `Your colony survived ${game.day} days. Every ending teaches the next crew how to begin.`;
     $('endOverlay').classList.remove('hidden');
   }
