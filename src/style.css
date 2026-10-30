@@ -332,6 +332,14 @@ p { margin: 0; }
 .primary-btn, .secondary-btn { border-radius: 16px; padding: 11px 18px; font-size: 15px; font-weight: 700; }
 .primary-btn { background: var(--lime); }
 .secondary-btn { background: #fff; }
+.sound-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.toggle-btn {
+  flex: 1; min-width: 130px; padding: 10px 14px; border-radius: 16px; font-size: 14px; font-weight: 700;
+  background: var(--sky); border: 3px solid var(--ink); box-shadow: var(--pop-sm);
+  transition: transform .12s cubic-bezier(.34, 1.56, .64, 1), box-shadow .12s;
+}
+.toggle-btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.toggle-btn.off { background: #e4dccd; color: var(--muted); }
 .save-status { min-height: 18px; color: #2e9e3e; font-size: 13px; font-weight: 600; margin-top: 12px; }
 .empty { font-size: 13px; color: var(--muted); }
 

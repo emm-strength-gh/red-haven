@@ -2,6 +2,7 @@ import './style.css';
 import { BUILDINGS, EVENT_CHOICES, SAVE_KEY, canBuild, loadGame, markNode, newGame, placeBuilding, resolveEvent, saveGame, stepGame } from './game.js';
 import { GameScene } from './scene.js';
 import { icon } from './icons.js';
+import { Audio } from './audio.js';
 
 const RESOURCES = ['timber', 'metal', 'food', 'power'];
 const LOG_BADGE = { good: '✓', warning: '!', danger: '!', info: 'i' };
@@ -57,7 +58,7 @@ app.innerHTML = `
       </div>
     </div>
     <div id="menuOverlay" class="overlay hidden">
-      <div class="dialog"><button id="closeMenu" class="dialog-close" aria-label="Close menu">${icon('close')}</button><div class="eyebrow eyebrow-purple">Paused at the frontier</div><h2>Game menu</h2><p>Drag to move the camera. Pinch or scroll to zoom. Choose a building, then tap an empty tile to construct it. Mark rocks and trees for gathering.</p><div class="dialog-actions"><button id="saveBtn" class="primary-btn">Save colony</button><button id="newBtn" class="secondary-btn">New game</button></div><div id="saveStatus" class="save-status"></div></div>
+      <div class="dialog"><button id="closeMenu" class="dialog-close" aria-label="Close menu">${icon('close')}</button><div class="eyebrow eyebrow-purple">Paused at the frontier</div><h2>Game menu</h2><p>Drag to move the camera. Pinch or scroll to zoom. Choose a building, then tap an empty tile to construct it. Mark rocks and trees for gathering.</p><div class="sound-row"><button id="soundBtn" class="toggle-btn"></button><button id="musicBtn" class="toggle-btn"></button></div><div class="dialog-actions"><button id="saveBtn" class="primary-btn">Save colony</button><button id="newBtn" class="secondary-btn">New game</button></div><div id="saveStatus" class="save-status"></div></div>
     </div>
     <div id="endOverlay" class="overlay hidden"><div class="dialog end-dialog"><div class="eyebrow eyebrow-orange" id="endEyebrow"></div><h2 id="endTitle"></h2><p id="endText"></p><div class="dialog-actions"><button id="endNew" class="primary-btn">Start a new colony</button><button id="endClose" class="secondary-btn">View colony</button></div></div></div>
   </main>`;
@@ -73,6 +74,13 @@ let selected = null;
 let last = performance.now();
 let uiAt = 0, saveAt = 0, endShown = false, visibleEvent = null;
 const shownResources = {};
+const audio = new Audio();
+// only touch the DOM when a list actually changes, so its pop-in animation doesn't replay
+const rendered = { crew: '', log: '' };
+const setHTML = (key, html) => { if (rendered[key] !== html) { rendered[key] = html; $(key).innerHTML = html; } };
+// what the sound layer saw last frame, to turn state changes into sound effects
+const heard = { enemies: 0, projectiles: 0, day: 0, timber: 0, metal: 0 };
+let zapAt = 0, chopAt = 0;
 
 const cardOrder = ['shelter', 'farm', 'solar', 'wall', 'turret', 'beacon'];
 $('buildCards').innerHTML = cardOrder.map(type => {
@@ -104,6 +112,7 @@ function start(mode) {
   }
   started = true;
   speed = 1;
+  resetHeard();
   $('startOverlay').classList.add('hidden');
   setTool('inspect');
   renderUI();
@@ -133,11 +142,11 @@ function renderUI() {
   const progress = expedition ? (beacon ? Math.min(100, 60 + game.beaconCharge / 30 * 40) : Math.min(60, game.day * 5)) : Math.min(100, game.day * 4);
   $('progressBar').style.width = `${progress}%`;
   $('progressText').textContent = expedition ? `${Math.floor(progress)}%` : `DAY ${game.day}`;
-  $('crew').innerHTML = game.colonists.map(c => {
+  setHTML('crew', game.colonists.map(c => {
     const hp = Math.max(0, Math.floor(c.hp));
     return `<button class="crew-member" data-crew="${c.id}"><span class="avatar role-${c.role.toLowerCase()}">${c.name[0]}</span><span class="crew-info"><strong>${c.name}</strong><small>${c.role} · ${c.task}</small><span class="hp${hp < 40 ? ' low' : ''}"><i style="width:${hp}%"></i></span></span></button>`;
-  }).join('') || '<p class="empty">No survivors.</p>';
-  $('log').innerHTML = game.eventLog.slice(0, 5).map(e => `<div class="event ${e.kind}"><span class="event-badge">${LOG_BADGE[e.kind] ?? 'i'}</span><span><small>DAY ${String(e.day).padStart(2, '0')}</small><p>${e.text}</p></span></div>`).join('');
+  }).join('') || '<p class="empty">No survivors.</p>');
+  setHTML('log', game.eventLog.slice(0, 5).map(e => `<div class="event ${e.kind}"><span class="event-badge">${LOG_BADGE[e.kind] ?? 'i'}</span><span><small>DAY ${String(e.day).padStart(2, '0')}</small><p>${e.text}</p></span></div>`).join(''));
   document.querySelectorAll('.build-card').forEach(button => {
     const type = button.dataset.build;
     button.classList.toggle('unaffordable', Object.entries(BUILDINGS[type].cost).some(([r, n]) => game.resources[r] < n));
@@ -167,14 +176,50 @@ function clickTile(tile) {
   if (!tile || !started) return;
   if (BUILDINGS[tool]) {
     const error = placeBuilding(game, tool, tile.x, tile.z);
-    if (error) toast(error);
-    else { world.sync(game); saveGame(game); inspectTile(tile); toast(`${BUILDINGS[tool].name} constructed!`); }
+    if (error) { toast(error); audio.error(); }
+    else { world.sync(game); saveGame(game); inspectTile(tile); toast(`${BUILDINGS[tool].name} constructed!`); audio.built(); }
   } else if (tool === 'gather') {
-    if (!markNode(game, tile.x, tile.z)) toast('Select a tree or metal deposit.');
+    if (!markNode(game, tile.x, tile.z)) { toast('Select a tree or metal deposit.'); audio.error(); }
+    else audio.mark();
     world.sync(game); inspectTile(tile);
-  } else inspectTile(tile);
+  } else { inspectTile(tile); audio.select(); }
   renderUI();
 }
+
+function resetHeard() {
+  Object.assign(heard, { enemies: game.enemies.length, projectiles: game.projectiles.length, day: game.day, timber: game.resources.timber, metal: game.resources.metal });
+}
+/** Turn simulation changes since last frame into sound effects. */
+function listen(now) {
+  const enemies = game.enemies.length;
+  if (enemies > heard.enemies && heard.enemies === 0) audio.alarm();
+  else if (enemies === 0 && heard.enemies > 0 && !game.gameOver) audio.fanfare();
+  else if (enemies < heard.enemies) audio.hit();
+  const shots = game.projectiles.length;
+  if (shots > heard.projectiles && now - zapAt > 90) { audio.zap(); zapAt = now; }
+  if (game.day > heard.day) audio.dawn();
+  for (const r of ['timber', 'metal']) {
+    const v = game.resources[r];
+    // small gains are the crew's pickaxes and axes; big ones are rewards
+    if (v > heard[r] && v - heard[r] <= 3 && now - chopAt > 150) { audio.chop(); audio.pickup(); chopAt = now; }
+    heard[r] = v;
+  }
+  heard.enemies = enemies; heard.projectiles = shots; heard.day = game.day;
+}
+function renderSoundButtons() {
+  $('soundBtn').textContent = audio.sound ? '🔊 Sound on' : '🔇 Sound off';
+  $('musicBtn').textContent = audio.music ? '🎵 Music on' : '🎵 Music off';
+  $('soundBtn').classList.toggle('off', !audio.sound);
+  $('musicBtn').classList.toggle('off', !audio.music);
+}
+renderSoundButtons();
+$('soundBtn').onclick = () => { audio.setPrefs(!audio.sound, audio.music); renderSoundButtons(); };
+$('musicBtn').onclick = () => { audio.setPrefs(audio.sound, !audio.music); renderSoundButtons(); };
+// browsers only allow audio after a user gesture
+document.addEventListener('pointerdown', () => audio.unlock(), true);
+document.addEventListener('keydown', () => audio.unlock(), true);
+document.addEventListener('click', e => { if (e.target.closest('button')) audio.ui(); }, true);
+document.addEventListener('visibilitychange', () => document.hidden ? audio.suspend() : audio.resume());
 
 $('expeditionBtn').onclick = () => start('expedition');
 $('endlessBtn').onclick = () => start('endless');
@@ -255,6 +300,8 @@ function frame(now) {
   const dt = Math.min((now - last) / 1000, .1);
   last = now;
   if (started && speed) stepGame(game, dt * speed);
+  if (started) listen(now);
+  audio.update(dt, { weather: game.weather, danger: started && game.enemies.length > 0 });
   world.sync(game);
   world.render();
   if (now - uiAt > 350) { renderUI(); uiAt = now; }
@@ -268,9 +315,11 @@ function frame(now) {
     $('eventText').textContent = event.text;
     $('eventChoices').innerHTML = event.choices.map((c, i) => `<button class="choice" data-choice="${i}"><strong>${c.label}</strong><small>${c.detail}</small></button>`).join('');
     $('eventOverlay').classList.remove('hidden');
+    audio.chime();
   }
   if (started && !endShown && (game.modeWon || game.gameOver)) {
     endShown = true; speed = 0; saveGame(game);
+    if (game.modeWon) audio.win(); else audio.lose();
     $('endEyebrow').textContent = game.modeWon ? 'Expedition complete' : 'Colony lost';
     $('endTitle').textContent = game.modeWon ? 'Mars heard your signal!' : 'The frontier endures.';
     $('endText').textContent = game.modeWon ? `Your crew survived ${game.day} days and reached orbit. Their home on Mars lives on.` : `Your colony survived ${game.day} days. Every ending teaches the next crew how to begin.`;
