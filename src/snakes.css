@@ -135,3 +135,34 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--yellow); outlin
   .level-pill { display: none; }
   .level-card .art { height: 64px; font-size: 2rem; }
 }
+
+/* ---------- on-screen direction pad ---------- */
+.dpad {
+  position: absolute; left: max(14px, env(safe-area-inset-left)); bottom: max(14px, env(safe-area-inset-bottom));
+  display: grid; grid-template: repeat(3, 58px) / repeat(3, 58px); gap: 6px; pointer-events: none;
+}
+.dpad button {
+  pointer-events: auto; border: 3px solid var(--ink); border-radius: 18px; background: var(--paper); box-shadow: 0 5px 0 var(--ink);
+  font-size: 1.4rem; line-height: 1; padding: 0; opacity: .88; transition: transform .08s, box-shadow .08s, background .08s;
+}
+.dpad button:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); background: var(--yellow); }
+.dpad .up { grid-area: 1 / 2; } .dpad .left { grid-area: 2 / 1; } .dpad .right { grid-area: 2 / 3; } .dpad .down { grid-area: 3 / 2; }
+@media (max-width: 520px) { .dpad { grid-template: repeat(3, 52px) / repeat(3, 52px); } }
+
+/* ---------- background events ---------- */
+.overlay, .weather, .rainbow { position: fixed; pointer-events: none; }
+.overlay { inset: 0; opacity: 0; }
+.overlay.tint { mix-blend-mode: screen; }
+.weather { inset: 0; width: 100%; height: 100%; }
+.rainbow {
+  left: 50%; bottom: -62vmax; width: 124vmax; height: 124vmax; margin-left: -62vmax; border-radius: 50%; opacity: 0; display: none;
+  background: radial-gradient(circle at 50% 50%, transparent 0 55%, #ff5f57 55% 57.5%, #ff8a3d 57.5% 60%, #ffd23f 60% 62.5%, #8ee04e 62.5% 65%, #4d96ff 65% 67.5%, #9b7bff 67.5% 70%, transparent 70%);
+}
+.rainbow.on { display: block; }
+.hud { z-index: 2; }
+.event-tag {
+  position: absolute; right: 12px; bottom: max(26px, env(safe-area-inset-bottom)); padding: 4px 14px; border: 3px solid var(--ink); border-radius: 999px;
+  background: var(--paper); box-shadow: 0 4px 0 var(--ink); font-family: var(--head); font-size: 1.05rem; opacity: 0; transform: translateX(20px);
+  transition: opacity .3s, transform .3s cubic-bezier(.34, 1.56, .64, 1); pointer-events: none;
+}
+.event-tag.show { opacity: 1; transform: none; }

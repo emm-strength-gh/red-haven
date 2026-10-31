@@ -54,7 +54,7 @@ h1 span:first-child { color: var(--orange); }
 @keyframes bob { 50% { transform: rotate(-2deg) translateY(-8px); } }
 .tagline { margin: 22px auto 28px; max-width: 30em; font-size: 1.15rem; font-weight: 500; line-height: 1.4; text-shadow: 0 2px 0 var(--ink); }
 
-.buttons { display: flex; flex-direction: column; gap: 18px; align-items: center; }
+.buttons { display: flex; flex-direction: column; gap: 16px; align-items: center; }
 .big-btn {
   display: flex; align-items: center; gap: 16px; width: min(420px, 88vw); padding: 16px 24px;
   border: 4px solid var(--ink); border-radius: 22px; text-decoration: none; color: var(--ink);
@@ -63,6 +63,7 @@ h1 span:first-child { color: var(--orange); }
 }
 .big-btn.launch { background: var(--orange); }
 .big-btn.snakes { background: var(--lime); }
+.big-btn.tetris { background: #5ed3f3; }
 .big-btn:hover { transform: translateY(-4px) rotate(-.6deg); box-shadow: 0 11px 0 var(--ink); }
 .big-btn:active { transform: translateY(5px); box-shadow: 0 2px 0 var(--ink); }
 .big-btn:focus-visible { outline: 4px solid var(--yellow); outline-offset: 4px; }

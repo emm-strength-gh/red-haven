@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#2a1f3d" />
+    <meta name="description" content="Tetris on Mars — a low-poly cartoon 3D block-stacking game. Blocks fall from the Martian sky." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lilita+One&display=swap" />
+    <link rel="stylesheet" href="/src/tetris.css" />
+    <title>Tetris on Mars — Red Haven</title>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="skyDim" class="overlay dim"></div>
+    <div id="skyTint" class="overlay tint"></div>
+
+    <div id="hud" class="hud off">
+      <div class="stats">
+        <div class="stat score"><small>Score</small><b id="score">0</b></div>
+        <div class="stat"><small>Best</small><b id="best">0</b></div>
+        <div class="stat"><small>Lines</small><b id="lines">0</b></div>
+        <div class="stat"><small>Level</small><b id="level">1</b></div>
+      </div>
+      <div class="hud-btns">
+        <button id="btnSound" class="round" aria-label="Toggle sound">🔊</button>
+        <button id="btnPause" class="round" aria-label="Pause">⏸</button>
+      </div>
+      <div class="side">
+        <div class="box"><small>Hold</small><canvas id="holdC" width="88" height="64"></canvas></div>
+        <div class="box"><small>Next</small>
+          <canvas id="nextC0" width="88" height="64"></canvas>
+          <canvas id="nextC1" width="88" height="64" class="dim"></canvas>
+          <canvas id="nextC2" width="88" height="64" class="dim"></canvas>
+        </div>
+      </div>
+      <div id="banner" class="banner"></div>
+      <div id="skyTag" class="sky-tag"></div>
+      <div class="pad" aria-label="Controls">
+        <button data-act="left" aria-label="Move left">◀</button>
+        <button data-act="right" aria-label="Move right">▶</button>
+        <button data-act="rotate" class="wide" aria-label="Rotate">⟳</button>
+        <button data-act="down" aria-label="Soft drop">▼</button>
+        <button data-act="drop" class="wide" aria-label="Hard drop">⤓ Drop</button>
+        <button data-act="hold" aria-label="Hold">Hold</button>
+      </div>
+    </div>
+
+    <section id="menu" class="screen">
+      <div class="panel">
+        <a class="home" href="index.html">← Home</a>
+        <h1>Tetris</h1>
+        <p class="sub">Mars edition — blocks rain from the Martian sky. Stack them, clear lines, don't touch the sky!</p>
+        <button class="btn green big" id="play">Play</button>
+        <ul class="keys">
+          <li><b>← →</b> move</li><li><b>↑ / X</b> rotate</li><li><b>Z</b> rotate back</li>
+          <li><b>↓</b> soft drop</li><li><b>Space</b> hard drop</li><li><b>C / Shift</b> hold</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="pause" class="screen hidden">
+      <div class="panel small">
+        <h2>Paused</h2>
+        <button class="btn green" id="resume">Resume</button>
+        <button class="btn" id="pRestart">Restart</button>
+        <button class="btn" id="pMenu">Menu</button>
+      </div>
+    </section>
+
+    <section id="over" class="screen hidden">
+      <div class="panel small">
+        <h2>Blocks reached the sky!</h2>
+        <div class="final"><small>Score</small><b id="overScore">0</b></div>
+        <p class="why" id="overWhy"></p>
+        <p class="newbest" id="overBest"></p>
+        <button class="btn green" id="again">Play again</button>
+        <button class="btn" id="oMenu">Menu</button>
+      </div>
+    </section>
+
+    <script type="module" src="/src/tetris.js"></script>
+  </body>
+</html>

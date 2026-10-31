@@ -14,6 +14,10 @@
   </head>
   <body>
     <div id="stage"></div>
+    <div id="rainbow" class="rainbow"></div>
+    <div id="fxDim" class="overlay"></div>
+    <div id="fxTint" class="overlay tint"></div>
+    <canvas id="weather" class="weather"></canvas>
 
     <div id="hud" class="hud">
       <div class="hud-row">
@@ -27,7 +31,14 @@
         </div>
       </div>
       <div id="chips" class="chips"></div>
+      <div id="eventTag" class="event-tag"></div>
       <div id="hint" class="hint">Swipe or use arrow keys / WASD to start</div>
+      <div class="dpad" aria-label="Direction controls">
+        <button data-dir="0,-1" class="up" aria-label="Up">▲</button>
+        <button data-dir="-1,0" class="left" aria-label="Left">◀</button>
+        <button data-dir="1,0" class="right" aria-label="Right">▶</button>
+        <button data-dir="0,1" class="down" aria-label="Down">▼</button>
+      </div>
     </div>
 
     <section id="menu" class="screen">

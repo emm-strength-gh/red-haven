@@ -5,7 +5,7 @@ export default defineConfig({
   base: './',
   build: {
     rollupOptions: {
-      input: { main: 'index.html', redhaven: 'redhaven.html', snakes: 'snakes.html' }
+      input: { main: 'index.html', redhaven: 'redhaven.html', snakes: 'snakes.html', tetris: 'tetris.html' }
     }
   },
   plugins: [VitePWA({

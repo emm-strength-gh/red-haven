@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { WorldEvents } from './snakes-events.js';
 
 // ================================================================ constants
 const N = 25;                       // arena is N x N cells
@@ -307,6 +308,9 @@ class SnakesGame {
     this.levelIndex = 0;
     this.state = 'menu';
     this.setupRenderer();
+    this.gradient = gradient;
+    this.swayK = 1;
+    this.events = new WorldEvents(this);
     this.buildMenu();
     this.bindUI();
     this.bindInput();
@@ -343,6 +347,8 @@ class SnakesGame {
     this.scene.add(sun, sun.target);
     this.camera = new THREE.PerspectiveCamera(40, 1, 0.5, 300);
     this.camBase = new THREE.Vector3(0, 40, 9);
+    this.focus = new THREE.Vector3();
+    this.zoom = 1;
     this.shake = 0;
     this.world = new THREE.Group();
     this.scene.add(this.world);
@@ -388,6 +394,7 @@ class SnakesGame {
     this.buildLayout(L);
     this.buildRing(L);
     this.applySnakeColors();
+    this.events.reset();
     if (resetState) this.resetRun();
     else this.resetRun(true);
     this.updateBestHUD();
@@ -717,6 +724,11 @@ class SnakesGame {
     const up = () => { down = false; };
     stage.addEventListener('pointerup', up);
     stage.addEventListener('pointercancel', up);
+    // on-screen direction pad
+    document.querySelectorAll('.dpad button').forEach((b) => {
+      const [x, y] = b.dataset.dir.split(',').map(Number);
+      b.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); this.sfx.unlock(); this.setDir({ x, y }); });
+    });
     document.addEventListener('visibilitychange', () => { if (document.hidden && this.state === 'playing') this.pause(); });
   }
 
@@ -770,7 +782,7 @@ class SnakesGame {
 
   // ---------------------------------------------------------- simulation
   interval() {
-    let t = Math.max(0.082, 0.18 - this.snake.length * 0.0014);
+    let t = Math.max(0.15, 0.38 - (this.snake.length - 3) * 0.003);
     if (this.fx.zoom > 0) t *= 0.62;
     return t;
   }
@@ -991,6 +1003,15 @@ class SnakesGame {
     }
   }
 
+  // ---------------------------------------------------------- hooks used by the background events
+  showEventTag(text) { const e = this.$('eventTag'); e.textContent = text; e.classList.remove('show'); void e.offsetWidth; e.classList.add('show'); }
+  hideEventTag() { this.$('eventTag').classList.remove('show'); }
+  setOverlay(dim, dimColor, tint, tintColor) {
+    const d = this.$('fxDim'), t = this.$('fxTint');
+    d.style.opacity = dim.toFixed(3); d.style.background = dimColor;
+    t.style.opacity = tint.toFixed(3); t.style.background = tintColor;
+  }
+
   // ---------------------------------------------------------- frame
   frame(now) {
     const dt = Math.min(0.05, (now - this.last) / 1000);
@@ -1002,6 +1023,7 @@ class SnakesGame {
   }
 
   update(dt) {
+    this.events.update(dt, this.state === 'playing');
     if (this.state === 'playing') {
       for (const id of POWER_IDS) if (this.fx[id] > 0) { this.fx[id] -= dt; if (this.fx[id] <= 0) { this.fx[id] = 0; this.renderChips(true); } }
       if (this.comboT > 0) { this.comboT -= dt; if (this.comboT <= 0) { this.combo = 0; this.updateHUD(); } }
@@ -1113,13 +1135,23 @@ class SnakesGame {
     }
 
     // ---- ambience
-    for (const s of this.sway) s.obj.rotation.z = Math.sin(t * 1.4 + s.ph) * s.amp;
+    for (const s of this.sway) s.obj.rotation.z = Math.sin(t * 1.4 + s.ph) * s.amp * this.swayK;
     for (const w of this.waterMats || []) w.m.position.y = 0.02 + Math.sin(t * 2 + w.ph) * 0.012;
 
     // ---- camera
     const sh = this.shake * this.shake;
-    this.camera.position.set(this.camBase.x + (Math.random() - 0.5) * sh * 0.9, this.camBase.y + (Math.random() - 0.5) * sh * 0.5, this.camBase.z + (Math.random() - 0.5) * sh * 0.9);
-    this.camera.lookAt(0, 0, 0);
+    // follow the head with a gentle ease, zoomed in while playing and pulled back on the menu
+    const following = this.state !== 'menu';
+    const hx = clamp(hp.x, -HALF - 1, HALF + 1), hz = clamp(hp.z, -HALF - 1, HALF + 1);
+    const ease = 1 - Math.exp(-dt * 4);
+    this.focus.x += ((following ? hx : 0) - this.focus.x) * ease;
+    this.focus.z += ((following ? hz : 0) - this.focus.z) * ease;
+    this.zoom += ((following ? 0.5 : 1) - this.zoom) * (1 - Math.exp(-dt * 2.5));
+    this.camera.position.set(
+      this.focus.x + this.camBase.x * this.zoom + (Math.random() - 0.5) * sh * 0.9,
+      this.camBase.y * this.zoom + (Math.random() - 0.5) * sh * 0.5,
+      this.focus.z + this.camBase.z * this.zoom + (Math.random() - 0.5) * sh * 0.9);
+    this.camera.lookAt(this.focus.x, 0, this.focus.z);
     this.renderer.render(this.scene, this.camera);
   }
 }
