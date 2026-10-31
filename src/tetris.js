@@ -659,7 +659,7 @@ class Tetris {
       left: () => this.move(-1), right: () => this.move(1), down: () => this.softDrop(),
       rotate: () => this.rotate(1), drop: () => this.hardDrop(), hold: () => this.holdPiece(),
     };
-    document.querySelectorAll('.pad button').forEach((b) => {
+    document.querySelectorAll('[data-act]').forEach((b) => {
       const act = actions[b.dataset.act];
       const repeats = ['left', 'right', 'down'].includes(b.dataset.act);
       let t1 = 0, t2 = 0;

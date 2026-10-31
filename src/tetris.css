@@ -111,12 +111,11 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--yellow); outlin
 @media (max-width: 560px) {
   .stat { min-width: 54px; padding: 3px 8px 4px; }
   .stat b { font-size: 1.25rem; } .stat.score b { font-size: 1.5rem; }
-  .stats { max-width: calc(100% - 20px); }
-  .hud-btns { top: auto; bottom: 76px; right: 12px; }
+  .stats { max-width: calc(100% - 110px); }
   .side { top: 112px; }
   .box canvas { width: 66px; height: 48px; } .box canvas.dim { display: none; }
-  .pad button { min-width: 48px; height: 48px; padding: 0 8px; font-size: 1rem; }
-  .pad button.wide { min-width: 70px; }
+  .pad-left { gap: 8px; } .pad-left button { width: 58px; height: 58px; font-size: 1.5rem; border-radius: 18px; }
+  .pad-right { gap: 8px; } .pad-right button.circle { width: 76px; height: 76px; } .pad-right button.circle span { font-size: 1.9rem; }
 }
 
 /* ---------- sky events ---------- */
@@ -131,3 +130,20 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--yellow); outlin
 }
 .sky-tag.show { opacity: 1; transform: none; }
 @media (max-width: 560px) { .sky-tag { top: 118px; } }
+
+/* ---------- thumb controls: move on the left, big round Drop / Rotate on the right ---------- */
+.pad-left, .pad-right { position: absolute; bottom: calc(max(12px, env(safe-area-inset-bottom)) + 70px); display: flex; gap: 10px; pointer-events: none; }
+.pad-left { left: 14px; }
+.pad-right { right: 14px; align-items: flex-end; }
+.pad-left button, .pad-right button {
+  pointer-events: auto; border: 3px solid var(--ink); box-shadow: 0 6px 0 var(--ink); font-family: var(--head); color: var(--ink);
+  transition: transform .08s, box-shadow .08s, filter .08s; padding: 0;
+}
+.pad-left button { width: 74px; height: 74px; border-radius: 22px; background: #5ed3f3; font-size: 2rem; line-height: 1; }
+.pad-right button.circle { width: 90px; height: 90px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; }
+.pad-right button.circle span { font-size: 2.2rem; }
+.pad-right button.circle small { font-size: .85rem; margin-top: 1px; }
+.pad-right .rot { background: var(--yellow); }
+.pad-right .drop { background: var(--orange); }
+.pad-left button:active, .pad-right button:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink); filter: brightness(1.1); }
+.pad { gap: 14px; }
