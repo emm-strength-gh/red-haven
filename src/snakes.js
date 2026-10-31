@@ -726,8 +726,9 @@ class SnakesGame {
     stage.addEventListener('pointercancel', up);
     // on-screen direction pad
     document.querySelectorAll('.dpad button').forEach((b) => {
-      const [x, y] = b.dataset.dir.split(',').map(Number);
-      b.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); this.sfx.unlock(); this.setDir({ x, y }); });
+      // a diagonal button queues two turns, e.g. "0,-1;-1,0" = up, then left
+      const turns = b.dataset.dir.split(';').map((d) => { const [x, y] = d.split(',').map(Number); return { x, y }; });
+      b.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); this.sfx.unlock(); turns.forEach((d) => this.setDir({ ...d })); });
     });
     document.addEventListener('visibilitychange', () => { if (document.hidden && this.state === 'playing') this.pause(); });
   }
