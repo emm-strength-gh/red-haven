@@ -2,17 +2,40 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-    <meta name="theme-color" content="#111b20" />
-    <meta name="description" content="Build a home on a habitable Mars in this low-poly colony survival strategy game." />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1b1235" />
+    <meta name="description" content="Red Haven — cartoon low-poly games. Build a Mars colony or slither through the Snakes arenas." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lilita+One&display=swap" />
-    <title>Redhaven — A Mars Colony Survival Game</title>
+    <link rel="stylesheet" href="/src/landing.css" />
+    <title>Red Haven — Games</title>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+    <div class="stars" aria-hidden="true"></div>
+    <div class="planet" aria-hidden="true"><i></i><i></i><i></i></div>
+
+    <main class="hero">
+      <p class="kicker">Low-poly cartoon games</p>
+      <h1><span>Red</span> <span>Haven</span></h1>
+      <p class="tagline">Build a home on a habitable Mars, or slither through jungle, desert and mountain arenas.</p>
+
+      <nav class="buttons" aria-label="Choose a game">
+        <a class="big-btn launch" href="redhaven.html">
+          <span class="emoji" aria-hidden="true">🚀</span>
+          <span class="txt"><b>Launch Red Haven</b><small>Mars colony survival</small></span>
+        </a>
+        <a class="big-btn snakes" href="snakes.html">
+          <span class="emoji" aria-hidden="true">🐍</span>
+          <span class="txt"><b>Snakes</b><small>3D arcade · 3 worlds · 7 powers</small></span>
+        </a>
+      </nav>
+    </main>
+
+    <div class="crawler" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span class="head"></span>
+    </div>
+    <footer>Works on desktop and mobile · progress is saved on this device</footer>
   </body>
 </html>

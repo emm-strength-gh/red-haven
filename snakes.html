@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#2a1f3d" />
+    <meta name="description" content="Snakes — a low-poly cartoon 3D snake game with jungle, desert and mountain arenas and power-ups." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lilita+One&display=swap" />
+    <link rel="stylesheet" href="/src/snakes.css" />
+    <title>Snakes — Red Haven</title>
+  </head>
+  <body>
+    <div id="stage"></div>
+
+    <div id="hud" class="hud">
+      <div class="hud-row">
+        <div class="stat score"><small>Score</small><b id="score">0</b><em id="combo"></em></div>
+        <div class="stat"><small>Best</small><b id="best">0</b></div>
+        <div class="stat"><small>Length</small><b id="length">3</b></div>
+        <div class="level-pill" id="levelName"></div>
+        <div class="hud-btns">
+          <button id="btnSound" class="round" aria-label="Toggle sound">🔊</button>
+          <button id="btnPause" class="round" aria-label="Pause">⏸</button>
+        </div>
+      </div>
+      <div id="chips" class="chips"></div>
+      <div id="hint" class="hint">Swipe or use arrow keys / WASD to start</div>
+    </div>
+
+    <section id="menu" class="screen">
+      <div class="panel">
+        <a class="home" href="index.html">← Home</a>
+        <h1>Snakes</h1>
+        <p class="sub">Eat apples, grab power-ups, dodge the scenery.</p>
+        <div class="levels" id="levels"></div>
+        <p class="keys">Arrow keys / WASD · swipe on touch · Space to pause</p>
+      </div>
+    </section>
+
+    <section id="pause" class="screen hidden">
+      <div class="panel small">
+        <h2>Paused</h2>
+        <button class="btn green" id="resume">Resume</button>
+        <button class="btn" id="pRestart">Restart</button>
+        <button class="btn" id="pMenu">Level select</button>
+      </div>
+    </section>
+
+    <section id="over" class="screen hidden">
+      <div class="panel small">
+        <h2 id="overTitle">Game over</h2>
+        <p class="why" id="overWhy"></p>
+        <div class="final"><small>Score</small><b id="overScore">0</b></div>
+        <p class="newbest" id="overBest"></p>
+        <button class="btn green" id="again">Play again</button>
+        <button class="btn" id="oMenu">Level select</button>
+      </div>
+    </section>
+
+    <script type="module" src="/src/snakes.js"></script>
+  </body>
+</html>

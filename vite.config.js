@@ -3,10 +3,17 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   base: './',
+  build: {
+    rollupOptions: {
+      input: { main: 'index.html', redhaven: 'redhaven.html', snakes: 'snakes.html' }
+    }
+  },
   plugins: [VitePWA({
     registerType: 'autoUpdate',
     includeAssets: ['favicon.svg'],
     workbox: {
+      // several HTML entry points: don't rewrite every navigation to the landing page
+      navigateFallback: null,
       // keep the cartoon fonts available offline after the first visit
       runtimeCaching: [{
         urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/,
@@ -15,14 +22,13 @@ export default defineConfig({
       }]
     },
     manifest: {
-      name: 'Redhaven: Mars Colony',
-      short_name: 'Redhaven',
-      description: 'A low-poly colony survival strategy game on a habitable Mars.',
+      name: 'Red Haven',
+      short_name: 'Red Haven',
+      description: 'Low-poly cartoon games: Red Haven Mars colony survival and Snakes.',
       theme_color: '#111b20',
       background_color: '#111b20',
       display: 'standalone',
-      orientation: 'landscape',
-      icons: [
+            icons: [
         { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
         { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
       ]
