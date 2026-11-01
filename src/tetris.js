@@ -154,6 +154,8 @@ class Tetris {
     this.$ = (id) => document.getElementById(id);
     this.sfx = new Sfx();
     this.best = this.loadBest();
+    this.guide = true;   // the ghost outline showing where the piece will land; off = hard mode
+    try { this.guide = JSON.parse(localStorage.getItem('tetris-guide-v1')) !== false; } catch { /* blocked */ }
     this.state = 'menu';
     this.clock = 0;
     this.shake = 0;
@@ -691,6 +693,8 @@ class Tetris {
 
   bindUI() {
     this.$('play').onclick = () => this.restart();
+    this.setGuide(this.guide);
+    this.$('guideBtn').onclick = () => { this.sfx.unlock(); this.sfx.click(); this.setGuide(!this.guide); };
     this.$('btnPause').onclick = () => { this.sfx.unlock(); this.state === 'paused' ? this.resume() : this.pause(); };
     this.$('btnSound').onclick = () => this.toggleSound();
     this.$('btnSound').textContent = this.sfx.on ? '🔊' : '🔇';
@@ -704,6 +708,15 @@ class Tetris {
   showScreen(name) {
     for (const id of ['menu', 'pause', 'over']) this.$(id).classList.toggle('hidden', id !== name);
     this.$('hud').classList.toggle('off', name === 'menu');
+  }
+
+  setGuide(on) {
+    this.guide = on;
+    try { localStorage.setItem('tetris-guide-v1', JSON.stringify(on)); } catch { /* blocked */ }
+    const b = this.$('guideBtn');
+    b.textContent = on ? 'Landing guide: ON' : 'Landing guide: OFF (hard mode)';
+    b.setAttribute('aria-pressed', String(on));
+    b.classList.toggle('off', !on);
   }
 
   restart() { this.sfx.unlock(); this.sfx.click(); this.bits.forEach((b) => b.mesh.parent?.remove(b.mesh)); this.bits = []; this.sky.reset(); this.resetGame(); this.state = 'playing'; this.showScreen(null); }
@@ -787,7 +800,7 @@ class Tetris {
         this.pieceMeshes[i].position.set(this.vis.x + c + 0.5 - W / 2, this.vis.y + r + 0.5, 0);
         this.ghostMeshes[i].position.set(cx(this.cur.x + c), cy(gy + r), 0);
       });
-      this.ghostGroup.visible = gy < this.cur.y;
+      this.ghostGroup.visible = this.guide && gy < this.cur.y;
     }
     // settled blocks glide down after a line clear
     const kb = 1 - Math.exp(-dt * 12);

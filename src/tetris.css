@@ -147,3 +147,6 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--yellow); outlin
 .pad-right .drop { background: var(--orange); }
 .pad-left button:active, .pad-right button:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink); filter: brightness(1.1); }
 .pad { gap: 14px; }
+
+.btn.toggle { font-size: 1.05rem; padding: 8px 14px; background: var(--paper); }
+.btn.toggle.off { background: var(--red); color: #fff; -webkit-text-stroke: 0; }
