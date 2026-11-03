@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { ArrangeAudio } from './arrange-audio.js';
+import { MarsAmbience } from './arrange-world.js';
 
 // Match Tetris's three-step toon ramp and dark inverted-hull outlines.
 const ramp = new THREE.DataTexture(new Uint8Array([110, 185, 255]), 3, 1, THREE.RedFormat);
@@ -82,6 +84,14 @@ class ArrangeNumbers {
     this.pointer = new THREE.Vector2();
     this.dynamic = new THREE.Group();
     this.scene.add(this.dynamic);
+    this.audio = new ArrangeAudio();
+    this.ambience = new MarsAmbience(this.scene, mesh, this.audio, (name) => this.showEvent(name));
+    this.groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    this.panOffset = new THREE.Vector3();
+    this.baseCameraPosition = new THREE.Vector3();
+    this.pointers = new Map();
+    this.gestureUsed = false;
+    this.lastTap = null;
     this.blocks = new Map();
     this.pickables = [];
     this.textures = [];
@@ -157,21 +167,150 @@ class ArrangeNumbers {
     this.$('playAgain').addEventListener('click', () => this.start(this.startNumber, this.endNumber));
     this.$('zoomIn').addEventListener('click', () => this.setZoom(this.zoom * 1.2));
     this.$('zoomOut').addEventListener('click', () => this.setZoom(this.zoom / 1.2));
+    this.$('centerView').addEventListener('click', () => {
+      this.panOffset.set(0, 0, 0);
+      this.applyPan();
+      this.setZoom(1);
+    });
+    this.$('eventBtn').addEventListener('click', () => this.ambience.next());
+    this.$('soundBtn').addEventListener('click', () => {
+      this.audio.toggle();
+      this.updateSoundButton();
+    });
     this.renderer.domElement.addEventListener('wheel', (event) => {
       if (!this.active) return;
       event.preventDefault();
-      this.setZoom(this.zoom * (event.deltaY < 0 ? 1.1 : .9));
+      if (event.ctrlKey || event.metaKey) this.setZoom(this.zoom * (event.deltaY < 0 ? 1.1 : .9));
+      else this.panByPixels(-event.deltaX * .5, -event.deltaY * .5);
     }, { passive: false });
-    this.renderer.domElement.addEventListener('pointerdown', (event) => {
-      this.down = { x: event.clientX, y: event.clientY };
+    const canvas = this.renderer.domElement;
+    canvas.addEventListener('pointerdown', (event) => this.pointerDown(event));
+    canvas.addEventListener('pointermove', (event) => this.pointerMove(event));
+    canvas.addEventListener('pointerup', (event) => this.pointerUp(event));
+    canvas.addEventListener('pointercancel', (event) => this.pointerCancel(event));
+    document.addEventListener('contextmenu', (event) => {
+      if (!(event.target instanceof HTMLInputElement)) event.preventDefault();
     });
-    this.renderer.domElement.addEventListener('pointerup', (event) => {
-      if (!this.active || !this.down) return;
-      const distance = Math.hypot(event.clientX - this.down.x, event.clientY - this.down.y);
-      this.down = null;
-      if (distance < 12) this.pick(event.clientX, event.clientY);
+    document.addEventListener('dblclick', (event) => {
+      if (!(event.target instanceof HTMLInputElement)) event.preventDefault();
+    });
+    document.addEventListener('selectstart', (event) => {
+      if (!(event.target instanceof HTMLInputElement)) event.preventDefault();
+    });
+    document.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a' && !(event.target instanceof HTMLInputElement)) event.preventDefault();
     });
     window.addEventListener('resize', () => this.resize());
+  }
+
+  updateSoundButton() {
+    const button = this.$('soundBtn');
+    button.textContent = this.audio.enabled ? '🔊' : '🔇';
+    button.setAttribute('aria-label', this.audio.enabled ? 'Mute sound' : 'Unmute sound');
+    button.setAttribute('aria-pressed', String(this.audio.enabled));
+  }
+
+  showEvent(name) {
+    const node = this.$('eventTag');
+    node.textContent = name;
+    node.classList.remove('hidden');
+    clearTimeout(this.eventTimer);
+    this.eventTimer = setTimeout(() => node.classList.add('hidden'), 3500);
+  }
+
+  pointerDown(event) {
+    if (!this.active || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    this.audio.unlock();
+    this.renderer.domElement.setPointerCapture(event.pointerId);
+    this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, moved: false });
+    if (this.pointers.size > 1) this.gestureUsed = true;
+  }
+
+  pointerMove(event) {
+    const point = this.pointers.get(event.pointerId);
+    if (!point || !this.active) return;
+    const oldX = point.x, oldY = point.y;
+    const oldCenter = this.pointerCenter();
+    const oldDistance = this.pointerDistance();
+    point.x = event.clientX;
+    point.y = event.clientY;
+    if (this.pointers.size > 1) {
+      this.gestureUsed = true;
+      const nextDistance = this.pointerDistance();
+      const before = this.groundAt(oldCenter.x, oldCenter.y);
+      if (oldDistance > 0) this.setZoom(this.zoom * nextDistance / oldDistance);
+      const center = this.pointerCenter();
+      const after = this.groundAt(center.x, center.y);
+      if (before && after) this.shiftPan(before.sub(after));
+      for (const item of this.pointers.values()) item.moved = true;
+    } else if (point.moved || Math.hypot(point.x - point.startX, point.y - point.startY) > 7) {
+      point.moved = true;
+      this.panBetween(oldX, oldY, point.x, point.y);
+    }
+  }
+
+  pointerUp(event) {
+    const point = this.pointers.get(event.pointerId);
+    if (!point) return;
+    const tapped = this.active && !this.gestureUsed && !point.moved &&
+      Math.hypot(event.clientX - point.startX, event.clientY - point.startY) < 8;
+    this.pointers.delete(event.pointerId);
+    if (this.pointers.size === 0) this.gestureUsed = false;
+    if (tapped) {
+      const now = performance.now();
+      const repeated = this.lastTap && now - this.lastTap.time < 330 &&
+        Math.hypot(event.clientX - this.lastTap.x, event.clientY - this.lastTap.y) < 28;
+      this.lastTap = { x: event.clientX, y: event.clientY, time: now };
+      if (!repeated) this.pick(event.clientX, event.clientY);
+    }
+  }
+
+  pointerCancel(event) {
+    this.pointers.delete(event.pointerId);
+    if (this.pointers.size === 0) this.gestureUsed = false;
+  }
+
+  pointerCenter() {
+    const points = [...this.pointers.values()];
+    return { x: points.reduce((n, p) => n + p.x, 0) / points.length, y: points.reduce((n, p) => n + p.y, 0) / points.length };
+  }
+
+  pointerDistance() {
+    const points = [...this.pointers.values()];
+    return points.length < 2 ? 0 : Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+  }
+
+  groundAt(clientX, clientY) {
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    this.pointer.set(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1);
+    this.raycaster.setFromCamera(this.pointer, this.camera);
+    return this.raycaster.ray.intersectPlane(this.groundPlane, new THREE.Vector3());
+  }
+
+  panBetween(fromX, fromY, toX, toY) {
+    const before = this.groundAt(fromX, fromY);
+    const after = this.groundAt(toX, toY);
+    if (before && after) this.shiftPan(before.sub(after));
+  }
+
+  panByPixels(dx, dy) {
+    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    this.panBetween(cx, cy, cx + dx, cy + dy);
+  }
+
+  shiftPan(delta) {
+    this.panOffset.add(delta);
+    const maxX = this.layout ? Math.max(7, this.layout.cols * this.layout.spacing) : 10;
+    const maxZ = this.layout ? Math.max(8, this.layout.rows * this.layout.spacing) : 10;
+    this.panOffset.x = THREE.MathUtils.clamp(this.panOffset.x, -maxX, maxX);
+    this.panOffset.y = 0;
+    this.panOffset.z = THREE.MathUtils.clamp(this.panOffset.z, -maxZ, maxZ);
+    this.applyPan();
+  }
+
+  applyPan() {
+    this.camera.position.copy(this.baseCameraPosition).add(this.panOffset);
+    this.camera.updateMatrixWorld();
   }
 
   clearGame() {
@@ -188,6 +327,10 @@ class ArrangeNumbers {
     this.particles = [];
     this.bursts = [];
     this.layout = null;
+    this.ambience.reset(null);
+    this.pointers.clear();
+    this.gestureUsed = false;
+    this.lastTap = null;
   }
 
   showMenu() {
@@ -195,6 +338,8 @@ class ArrangeNumbers {
     this.$('complete').classList.add('hidden');
     this.$('hud').classList.add('hidden');
     this.$('zoomControls').classList.add('hidden');
+    this.$('worldActions').classList.add('hidden');
+    this.$('eventTag').classList.add('hidden');
     this.$('menu').classList.remove('hidden');
     this.$('validation').textContent = '';
     this.hideToast();
@@ -202,6 +347,7 @@ class ArrangeNumbers {
   }
 
   start(start, end) {
+    this.audio.unlock();
     this.clearGame();
     this.startNumber = start;
     this.endNumber = end;
@@ -214,6 +360,7 @@ class ArrangeNumbers {
     const rows = Math.ceil(slotCount / cols);
     const wallRows = Math.ceil(this.total / cols);
     this.layout = { cols, rows, wallRows, wallZ: -5.5, spacing: 1.62, slots: [], occupied: new Map() };
+    this.ambience.reset(this.layout);
     for (let i = 0; i < rows * cols; i++) {
       const c = i % cols;
       const r = Math.floor(i / cols);
@@ -256,11 +403,15 @@ class ArrangeNumbers {
     });
 
     this.zoom = 1;
+    this.panOffset.set(0, 0, 0);
     this.active = true;
     this.$('menu').classList.add('hidden');
     this.$('complete').classList.add('hidden');
     this.$('hud').classList.remove('hidden');
     this.$('zoomControls').classList.remove('hidden');
+    this.$('worldActions').classList.remove('hidden');
+    this.$('eventTag').classList.add('hidden');
+    this.updateSoundButton();
     this.hideToast();
     this.updateHud();
     this.resize();
@@ -286,6 +437,7 @@ class ArrangeNumbers {
   }
 
   correct(block) {
+    this.audio.correct();
     block.state = 'moving';
     this.layout.occupied.delete(block.slot);
     const index = block.number - this.startNumber;
@@ -300,6 +452,7 @@ class ArrangeNumbers {
   }
 
   wrong(block) {
+    this.audio.wrong();
     block.state = 'burst';
     this.layout.occupied.delete(block.slot);
     block.root.visible = false;
@@ -328,9 +481,11 @@ class ArrangeNumbers {
   }
 
   finish() {
+    this.audio.win();
     this.active = false;
     this.$('hud').classList.add('hidden');
     this.$('zoomControls').classList.add('hidden');
+    this.$('worldActions').classList.add('hidden');
     this.$('finishText').textContent = `Every number from ${this.startNumber} to ${this.endNumber} is stacked on the Mars wall.`;
     this.$('finishMisses').textContent = this.misses === 0 ? 'Flawless — no wrong taps!' : `${this.misses} wrong ${this.misses === 1 ? 'tap' : 'taps'} along the way.`;
     this.$('complete').classList.remove('hidden');
@@ -351,7 +506,7 @@ class ArrangeNumbers {
   }
 
   setZoom(value) {
-    this.zoom = THREE.MathUtils.clamp(value, .7, 1.9);
+    this.zoom = THREE.MathUtils.clamp(value, .7, 2.2);
     this.camera.zoom = this.zoom;
     this.camera.updateProjectionMatrix();
   }
@@ -382,6 +537,8 @@ class ArrangeNumbers {
     const up = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion);
     const shift = right.multiplyScalar((minX + maxX) / 2).add(up.multiplyScalar((minY + maxY) / 2));
     this.camera.position.add(shift);
+    this.baseCameraPosition.copy(this.camera.position);
+    this.camera.position.add(this.panOffset);
     const frameHeight = Math.max(maxY - minY + (width < 650 ? 6 : 5), (maxX - minX + 3.2) / aspect);
     this.camera.left = -frameHeight * aspect / 2;
     this.camera.right = frameHeight * aspect / 2;
@@ -409,6 +566,7 @@ class ArrangeNumbers {
         move.block.state = 'stacked';
         this.moves.splice(i, 1);
         this.stacked++;
+        this.audio.land();
         this.updateHud();
         if (this.stacked === this.total) this.finish();
       }
@@ -439,6 +597,7 @@ class ArrangeNumbers {
         this.particles.splice(i, 1);
       }
     }
+    this.ambience.update(delta, this.active);
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame((next) => this.frame(next));
   }

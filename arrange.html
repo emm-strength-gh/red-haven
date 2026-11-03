@@ -24,9 +24,15 @@
       <button id="newRange" class="small-btn" type="button">New range</button>
     </header>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="eventTag" class="event-tag hidden" role="status" aria-live="polite"></div>
     <div class="zoom hidden" id="zoomControls" aria-label="Zoom controls">
       <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
       <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+      <button id="centerView" type="button" aria-label="Center view">⌖</button>
+    </div>
+    <div class="world-actions hidden" id="worldActions">
+      <button id="eventBtn" type="button" aria-label="Show next Mars event" title="Show next Mars event">☄</button>
+      <button id="soundBtn" type="button" aria-label="Mute sound" title="Toggle sound" aria-pressed="true">🔊</button>
     </div>
 
     <section id="menu" class="screen">
@@ -42,7 +48,7 @@
         </div>
         <p class="validation" id="validation" role="alert"></p>
         <button class="btn green" type="submit">Start arranging</button>
-        <p class="tip">Try 1–10 or 51–90 · up to 60 blocks<br>Wrong taps pop and reappear somewhere new.</p>
+        <p class="tip">Try 1–10 or 51–90 · up to 60 blocks<br>Drag or wheel-scroll to explore; pinch or use +/− to zoom.</p>
       </form>
     </section>
 

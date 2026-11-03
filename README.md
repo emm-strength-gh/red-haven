@@ -14,7 +14,7 @@ Open the URL printed by Vite. For a production build, run `npm run build`. The s
 ## Controls
 
 - On the landing page, choose a game. Arrange Numbers lets you enter a whole-number range from 0–9999, with up to 60 blocks per round.
-- In Arrange Numbers, tap blocks in ascending order. Correct blocks roll to the wall; wrong blocks burst and reappear in a new free spot. Use the +/− buttons or mouse wheel to zoom.
+- In Arrange Numbers, tap blocks in ascending order. Correct blocks roll to the wall; wrong blocks burst and reappear in a new free spot. Drag or wheel-scroll to explore, pinch or use +/− to zoom, and use Center to reset the view. The Mars scene has 15 rotating background events; the comet button starts the next one. Sound effects can be muted.
 - Tap/click a build card, then a highlighted empty tile to place it.
 - Tap/click a rock or tree in Gather mode to mark it for harvesting.
 - Tap/click a building, colonist, or tile in Inspect mode for details.
