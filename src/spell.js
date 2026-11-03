@@ -153,6 +153,7 @@ class SpellGame {
     this.camY = 7;
     this.camZ = 16;
     this.zoom = 1; this.zoomTarget = 1;
+    this.pitch = 15; this.pitchTarget = 15; this.skyPitch = 15;
     this.pointers = new Map();
     this.letterMats = new Map();
     this.emojiTexCache = new Map();
@@ -231,14 +232,23 @@ class SpellGame {
     this.camZ = Math.max(15, (this.fx + 1.5) / (t * a));
     this.zMax = clamp(this.camZ - 11, 3, 11);                       // how close to the camera blocks may sit
     this.lookTarget = new THREE.Vector3(0, 2.4, -10);
-    // slightly top-down: a fixed ~15 degree look-down however far back the camera has to sit
-    this.camY = this.lookTarget.y + Math.tan(THREE.MathUtils.degToRad(15)) * (this.camZ - this.lookTarget.z);
+    // the camera orbits the look target; its distance is what puts the whole play area in view at the default 15 degree look-down
+    this.baseDist = (this.camZ - this.lookTarget.z) / Math.cos(THREE.MathUtils.degToRad(15));
+    this.camY = this.lookTarget.y + Math.sin(THREE.MathUtils.degToRad(15)) * this.baseDist;
     this.camera.position.set(0, this.camY, this.camZ);
     this.camera.lookAt(this.lookTarget);
-    const pitch = Math.atan((this.camY - this.lookTarget.y) / (this.camZ - this.lookTarget.z));
-    this.drawSky(clamp(0.5 - Math.tan(pitch) / (2 * t), 0.15, 0.7));
     this.visAz = THREE.MathUtils.radToDeg(Math.atan(t * a));
-    if (this.sky) this.sky.elBias = (THREE.MathUtils.radToDeg(Math.atan(t)) - THREE.MathUtils.radToDeg(pitch)) - 23;   // keep sky events above the horizon, inside the view
+    this.tanHalf = t;
+    this.applyPitchSky(true);
+  }
+
+  /** the sky gradient and sky-event heights follow the horizon as the camera tilts */
+  applyPitchSky(force = false) {
+    if (!force && Math.abs(this.pitch - this.skyPitch) < 0.4) return;
+    this.skyPitch = this.pitch;
+    const pr = THREE.MathUtils.degToRad(this.pitch), t = this.tanHalf;
+    this.drawSky(clamp(0.5 - Math.tan(pr) / (2 * t), 0.02, 0.85));
+    if (this.sky) this.sky.elBias = (THREE.MathUtils.radToDeg(Math.atan(t)) - this.pitch) - 23;   // keep sky events above the horizon, inside the view
   }
 
   buildWorld() {
@@ -612,7 +622,7 @@ class SpellGame {
     stage.addEventListener('pointerdown', (e) => {
       this.sfx.unlock();
       try { stage.setPointerCapture(e.pointerId); } catch { /* synthetic or unsupported pointer */ }
-      this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, ly: e.clientY });
       if (this.pointers.size === 1) tap = { id: e.pointerId, x: e.clientX, y: e.clientY };
       else {
         tap = null;
@@ -623,7 +633,10 @@ class SpellGame {
     stage.addEventListener('pointermove', (e) => {
       const p = this.pointers.get(e.pointerId);
       if (p) {
-        p.x = e.clientX; p.y = e.clientY;
+        const dy = e.clientY - p.ly;
+        p.x = e.clientX; p.y = e.clientY; p.ly = e.clientY;
+        // one-finger swipe tilts the camera: swipe down = look more top-down, swipe up = look towards the horizon
+        if (this.pointers.size === 1 && (!tap || tap.id !== e.pointerId)) this.pitchTarget = clamp(this.pitchTarget + dy * 0.22, 5, 58);
         if (this.pointers.size === 2 && pinch) {
           const [a, b] = [...this.pointers.values()];
           setZoom(pinch.zoom * pinch.dist / (Math.hypot(a.x - b.x, a.y - b.y) || 1));   // fingers apart = zoom in
@@ -831,8 +844,11 @@ class SpellGame {
     for (const l of this.beacons) l.material.emissiveIntensity = blink;
     this.moons[0].rotation.y = t * 0.05; this.moons[1].rotation.y = -t * 0.04;
     this.zoom += (this.zoomTarget - this.zoom) * (1 - Math.exp(-dt * 10));
-    const base = new THREE.Vector3(Math.sin(t * 0.25) * 0.18, this.camY + Math.sin(t * 0.2) * 0.08, this.camZ);
-    this.camera.position.copy(this.lookTarget).addScaledVector(base.sub(this.lookTarget), this.zoom);
+    this.pitch += (this.pitchTarget - this.pitch) * (1 - Math.exp(-dt * 10));
+    const pr = THREE.MathUtils.degToRad(this.pitch), d = this.baseDist * this.zoom;
+    this.camera.position.set(Math.sin(t * 0.25) * 0.18, this.lookTarget.y + Math.sin(pr) * d + Math.sin(t * 0.2) * 0.08, this.lookTarget.z + Math.cos(pr) * d);
+    this.camY = this.camera.position.y;
+    this.applyPitchSky();
     this.camera.lookAt(this.lookTarget);
     this.renderer.render(this.scene, this.camera);
   }

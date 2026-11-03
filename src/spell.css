@@ -129,3 +129,5 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
   .stars-pill { font-size: 1.4rem; }
   .sky-tag { top: 66px; }
 }
+
+.note.tip { text-align: center; font-weight: 600; }
