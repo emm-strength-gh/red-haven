@@ -152,6 +152,8 @@ class SpellGame {
     this.zMax = 3;
     this.camY = 7;
     this.camZ = 16;
+    this.zoom = 1; this.zoomTarget = 1;
+    this.pointers = new Map();
     this.letterMats = new Map();
     this.emojiTexCache = new Map();
     this.setupScene();
@@ -228,12 +230,15 @@ class SpellGame {
     this.fx = a < 0.8 ? 5.4 : a < 1.2 ? 7.4 : 9.4;                  // half width of the play area
     this.camZ = Math.max(15, (this.fx + 1.5) / (t * a));
     this.zMax = clamp(this.camZ - 11, 3, 11);                       // how close to the camera blocks may sit
-    this.camera.position.set(0, this.camY, this.camZ);
     this.lookTarget = new THREE.Vector3(0, 2.4, -10);
+    // slightly top-down: a fixed ~15 degree look-down however far back the camera has to sit
+    this.camY = this.lookTarget.y + Math.tan(THREE.MathUtils.degToRad(15)) * (this.camZ - this.lookTarget.z);
+    this.camera.position.set(0, this.camY, this.camZ);
     this.camera.lookAt(this.lookTarget);
     const pitch = Math.atan((this.camY - this.lookTarget.y) / (this.camZ - this.lookTarget.z));
     this.drawSky(clamp(0.5 - Math.tan(pitch) / (2 * t), 0.15, 0.7));
     this.visAz = THREE.MathUtils.radToDeg(Math.atan(t * a));
+    if (this.sky) this.sky.elBias = (THREE.MathUtils.radToDeg(Math.atan(t)) - THREE.MathUtils.radToDeg(pitch)) - 23;   // keep sky events above the horizon, inside the view
   }
 
   buildWorld() {
@@ -598,23 +603,61 @@ class SpellGame {
     const pick = (e) => {
       const r = this.renderer.domElement.getBoundingClientRect();
       this.raycaster.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), this.camera);
-      return r;
     };
+    const hitBlock = () => this.raycaster.intersectObjects(this.blocks.filter((b) => b.state === 'idle').map((b) => b.mesh), false)[0];
+    const setZoom = (z) => { this.zoomTarget = clamp(z, 0.55, 1.4); };
+    let tap = null, pinch = null;
+
+    // a tap is judged on release, so a second finger landing (pinch) never taps a block by accident
     stage.addEventListener('pointerdown', (e) => {
       this.sfx.unlock();
-      if (this.state !== 'playing') return;
-      pick(e);
-      const hit = this.raycaster.intersectObjects(this.blocks.filter((b) => b.state === 'idle').map((b) => b.mesh), false)[0];
-      if (hit) { this.onTap(hit.object.userData.block); return; }
-      if (this.raycaster.intersectObjects([this.billFace, this.emojiPlane], false).length) this.hear();
+      try { stage.setPointerCapture(e.pointerId); } catch { /* synthetic or unsupported pointer */ }
+      this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (this.pointers.size === 1) tap = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      else {
+        tap = null;
+        const [a, b] = [...this.pointers.values()];
+        pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, zoom: this.zoomTarget };
+      }
     });
     stage.addEventListener('pointermove', (e) => {
-      if (e.pointerType !== 'mouse' || this.state !== 'playing') return;
-      pick(e);
-      const hit = this.raycaster.intersectObjects(this.blocks.filter((b) => b.state === 'idle').map((b) => b.mesh), false)[0];
-      this.hover = hit ? hit.object.userData.block : null;
-      stage.style.cursor = hit ? 'pointer' : 'default';
+      const p = this.pointers.get(e.pointerId);
+      if (p) {
+        p.x = e.clientX; p.y = e.clientY;
+        if (this.pointers.size === 2 && pinch) {
+          const [a, b] = [...this.pointers.values()];
+          setZoom(pinch.zoom * pinch.dist / (Math.hypot(a.x - b.x, a.y - b.y) || 1));   // fingers apart = zoom in
+        }
+        if (tap && tap.id === e.pointerId && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 14) tap = null;
+      }
+      if (e.pointerType === 'mouse' && this.state === 'playing') {
+        pick(e);
+        const hit = hitBlock();
+        this.hover = hit ? hit.object.userData.block : null;
+        stage.style.cursor = hit ? 'pointer' : 'default';
+      }
     });
+    const release = (e, cancelled) => {
+      this.pointers.delete(e.pointerId);
+      if (this.pointers.size < 2) pinch = null;
+      if (!tap || tap.id !== e.pointerId) return;
+      const t = tap; tap = null;
+      if (cancelled || this.state !== 'playing') return;
+      pick({ clientX: t.x, clientY: t.y });
+      const hit = hitBlock();
+      if (hit) { this.onTap(hit.object.userData.block); return; }
+      if (this.raycaster.intersectObjects([this.billFace, this.emojiPlane], false).length) this.hear();
+    };
+    stage.addEventListener('pointerup', (e) => release(e, false));
+    stage.addEventListener('pointercancel', (e) => release(e, true));
+    stage.addEventListener('wheel', (e) => { e.preventDefault(); setZoom(this.zoomTarget * Math.exp(e.deltaY * 0.0012)); }, { passive: false });
+
+    // no right-click menu, no select-all on double tap, no browser page-zoom gestures (inputs keep normal behaviour)
+    const inField = (e) => e.target.closest && e.target.closest('input, textarea');
+    document.addEventListener('contextmenu', (e) => { if (!inField(e)) e.preventDefault(); });
+    document.addEventListener('selectstart', (e) => { if (!inField(e)) e.preventDefault(); });
+    document.addEventListener('dblclick', (e) => { if (!inField(e)) e.preventDefault(); });
+    for (const g of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(g, (e) => e.preventDefault());
   }
 
   hear() { if (this.item) this.speak(this.item.w.toLowerCase()); }
@@ -787,7 +830,9 @@ class SpellGame {
     const blink = Math.sin(t * 4) > 0 ? 1 : 0.15;
     for (const l of this.beacons) l.material.emissiveIntensity = blink;
     this.moons[0].rotation.y = t * 0.05; this.moons[1].rotation.y = -t * 0.04;
-    this.camera.position.set(Math.sin(t * 0.25) * 0.18, this.camY + Math.sin(t * 0.2) * 0.08, this.camZ);
+    this.zoom += (this.zoomTarget - this.zoom) * (1 - Math.exp(-dt * 10));
+    const base = new THREE.Vector3(Math.sin(t * 0.25) * 0.18, this.camY + Math.sin(t * 0.2) * 0.08, this.camZ);
+    this.camera.position.copy(this.lookTarget).addScaledVector(base.sub(this.lookTarget), this.zoom);
     this.camera.lookAt(this.lookTarget);
     this.renderer.render(this.scene, this.camera);
   }
