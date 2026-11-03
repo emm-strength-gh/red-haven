@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#2a1f3d" />
+    <meta name="description" content="Arrange Numbers — a colorful low-poly 3D number-ordering game on Mars." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lilita+One&display=swap" />
+    <link rel="stylesheet" href="/src/arrange.css" />
+    <title>Arrange Numbers — Red Haven</title>
+  </head>
+  <body>
+    <div id="stage" aria-label="3D Mars number field"></div>
+    <header class="hud hidden" id="hud">
+      <a class="home" href="index.html">← Home</a>
+      <div class="stats">
+        <div class="stat target"><small>Tap next</small><b id="nextNumber">1</b></div>
+        <div class="stat"><small>Stacked</small><b id="progress">0 / 10</b></div>
+        <div class="stat misses"><small>Oops!</small><b id="misses">0</b></div>
+      </div>
+      <button id="newRange" class="small-btn" type="button">New range</button>
+    </header>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div class="zoom hidden" id="zoomControls" aria-label="Zoom controls">
+      <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
+      <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+    </div>
+
+    <section id="menu" class="screen">
+      <form id="rangeForm" class="panel" novalidate>
+        <a class="home" href="index.html">← Home</a>
+        <div class="badge">Mars number game</div>
+        <h1>Arrange<br><span>Numbers</span></h1>
+        <p class="sub">Pick a range, then tap the colorful blocks from smallest to largest. Each correct block rolls into the number wall!</p>
+        <div class="range-inputs">
+          <label>From<input id="rangeStart" name="rangeStart" type="number" inputmode="numeric" min="0" max="9999" step="1" value="1" required /></label>
+          <span class="dash" aria-hidden="true">→</span>
+          <label>To<input id="rangeEnd" name="rangeEnd" type="number" inputmode="numeric" min="0" max="9999" step="1" value="10" required /></label>
+        </div>
+        <p class="validation" id="validation" role="alert"></p>
+        <button class="btn green" type="submit">Start arranging</button>
+        <p class="tip">Try 1–10 or 51–90 · up to 60 blocks<br>Wrong taps pop and reappear somewhere new.</p>
+      </form>
+    </section>
+
+    <section id="complete" class="screen hidden">
+      <div class="panel complete-panel">
+        <div class="badge">Wall complete!</div>
+        <h2>Perfect order!</h2>
+        <p id="finishText"></p>
+        <p id="finishMisses" class="finish-misses"></p>
+        <button id="playAgain" class="btn green" type="button">Play again</button>
+        <button id="chooseRange" class="btn" type="button">Choose a new range</button>
+        <a class="text-link" href="index.html">Back to games</a>
+      </div>
+    </section>
+    <script type="module" src="/src/arrange.js"></script>
+  </body>
+</html>

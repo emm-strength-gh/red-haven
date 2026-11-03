@@ -1,6 +1,6 @@
-# Redhaven
+# Red Haven
 
-A mobile-minded, low-poly 3D isometric colony survival game set on a habitable Mars. This is a playable prototype with Expedition and Endless modes, construction, automated colonists, gathering, raids, random events, local saves, and offline PWA support.
+A mobile-minded collection of low-poly 3D games, including a colony survival prototype set on a habitable Mars. The colony game has Expedition and Endless modes, construction, automated colonists, gathering, raids, random events, and local saves. The hub also includes Snakes, Tetris, and Arrange Numbers. The site is PWA-ready for offline play.
 
 ## Run locally
 
@@ -13,6 +13,8 @@ Open the URL printed by Vite. For a production build, run `npm run build`. The s
 
 ## Controls
 
+- On the landing page, choose a game. Arrange Numbers lets you enter a whole-number range from 0–9999, with up to 60 blocks per round.
+- In Arrange Numbers, tap blocks in ascending order. Correct blocks roll to the wall; wrong blocks burst and reappear in a new free spot. Use the +/− buttons or mouse wheel to zoom.
 - Tap/click a build card, then a highlighted empty tile to place it.
 - Tap/click a rock or tree in Gather mode to mark it for harvesting.
 - Tap/click a building, colonist, or tile in Inspect mode for details.
