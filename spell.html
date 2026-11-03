@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#2a1f3d" />
+    <meta name="description" content="Spell It on Mars — a gentle low-poly 3D spelling game for little ones. Tap the letters to spell the picture." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lilita+One&display=swap" />
+    <link rel="stylesheet" href="/src/spell.css" />
+    <title>Spell It on Mars — Red Haven</title>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="skyDim" class="overlay dim"></div>
+    <div id="skyTint" class="overlay tint"></div>
+
+    <div id="hud" class="hud off">
+      <div class="stars-pill" aria-label="Stars"><span>⭐</span><b id="stars">0</b></div>
+      <div class="hud-btns">
+        <button id="btnHear" class="round" aria-label="Hear the word">📢</button>
+        <button id="btnHint" class="round" aria-label="Show a hint">💡</button>
+        <button id="btnSound" class="round" aria-label="Toggle sound">🔊</button>
+        <button id="btnHome" class="round" aria-label="Menu">🏠</button>
+      </div>
+      <div id="banner" class="banner"></div>
+      <div id="skyTag" class="sky-tag"></div>
+    </div>
+
+    <section id="menu" class="screen">
+      <div class="panel">
+        <a class="home" href="index.html">← Home</a>
+        <h1>Spell It!</h1>
+        <p class="sub">Look at the picture, then tap the letters in order to spell it. Careful — the wrong letter goes <b>BOOM</b>! 💥</p>
+        <button class="btn green big" id="play">▶ Play</button>
+        <button class="btn" id="openSettings">⚙️ Settings &amp; words</button>
+      </div>
+    </section>
+
+    <section id="settings" class="screen hidden">
+      <div class="panel wide">
+        <h2>Settings</h2>
+        <div class="set-grid">
+          <button class="toggle" data-opt="sound"></button>
+          <button class="toggle" data-opt="voice"></button>
+          <button class="toggle" data-opt="autoHint"></button>
+          <button class="toggle" data-opt="ghost"></button>
+        </div>
+        <div class="set-row"><span>Extra letters on the ground</span>
+          <div class="seg" id="extraSeg"><button data-n="2">2</button><button data-n="4">4</button><button data-n="6">6</button></div>
+        </div>
+
+        <h3>Words <small id="wordCount"></small></h3>
+        <p class="note">Tap a word to turn it on or off.</p>
+        <div class="words" id="wordList"></div>
+
+        <h3>Add your own word</h3>
+        <div class="add">
+          <input id="newWord" type="text" maxlength="10" placeholder="Type a word" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+          <button class="btn green" id="addWord">Add</button>
+        </div>
+        <p class="note">Pick a picture for it:</p>
+        <div class="emoji-grid" id="emojiGrid"></div>
+        <p class="msg" id="addMsg"></p>
+        <button class="btn" id="closeSettings">Done</button>
+      </div>
+    </section>
+
+    <script type="module" src="/src/spell.js"></script>
+  </body>
+</html>

@@ -23,8 +23,10 @@ function canvasTex(w, h, draw) {
 }
 
 export class SkyEvents {
-  constructor(game) {
+  /** opts.skip: event names to leave out; opts.extra: [name, icon, factory(sky)] added to the pool; opts.elBias: degrees added to every sky elevation */
+  constructor(game, opts = {}) {
     this.g = game;
+    this.elBias = opts.elBias || 0;
     this.group = new THREE.Group();
     game.scene.add(this.group);
     this.objs = [];
@@ -88,12 +90,13 @@ export class SkyEvents {
       ['Earth-rise', '🌍', () => this.earthrise()],
       ['Meteor impact', '🔥', () => this.impact()],
       ['Satellite pass', '📡', () => this.satPass()],
-    ];
+    ].filter((e) => !(opts.skip || []).includes(e[0]));
+    for (const [name, icon, make] of opts.extra || []) this.events.push([name, icon, () => make(this)]);
   }
 
   // ---------------------------------------------------------- helpers
   azRange() { return Math.max(7, this.g.visAz * 0.8); }
-  dir(az, el, r = R) { return new THREE.Vector3(Math.sin(rad(az)) * Math.cos(rad(el)) * r, Math.sin(rad(el)) * r, -Math.cos(rad(az)) * Math.cos(rad(el)) * r); }
+  dir(az, el, r = R) { el += this.elBias; return new THREE.Vector3(Math.sin(rad(az)) * Math.cos(rad(el)) * r, Math.sin(rad(el)) * r, -Math.cos(rad(az)) * Math.cos(rad(el)) * r); }
   /** a point on the ground at distance r (local space is centred on the camera) */
   ground(az, r, h = 0) { return new THREE.Vector3(Math.sin(rad(az)) * r, -this.g.camY + h, -Math.cos(rad(az)) * r); }
   add(o) { this.group.add(o); this.objs.push(o); return o; }
