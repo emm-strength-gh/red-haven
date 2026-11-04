@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#271a4b" />
+    <meta name="description" content="Color Pour on Mars — tap to sort bright layers into bottles and explore a growing puzzle trail." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lilita+One&display=swap" />
+    <link rel="stylesheet" href="/src/pour.css" />
+    <title>Color Pour on Mars — Red Haven</title>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header id="hud" class="hud hidden">
+      <div class="hud-left">
+        <button id="hudMap" class="round" aria-label="Level map">🗺️</button>
+        <div class="level-pill"><small>LEVEL</small><b id="levelNumber">1</b></div>
+      </div>
+      <div class="hud-right">
+        <div class="move-pill"><small>MOVES</small><b id="moveCount">0</b></div>
+        <button id="soundButton" class="round" aria-label="Toggle sound">🔊</button>
+      </div>
+      <div id="hint" class="hint">Tap a bottle, then tap another to pour.</div>
+      <div class="tools">
+        <button id="undoButton" class="tool-btn" disabled>↶ Undo</button>
+        <button id="restartButton" class="tool-btn">⟳ Restart</button>
+      </div>
+    </header>
+
+    <section id="menu" class="screen">
+      <div class="panel menu-panel">
+        <a class="home" href="index.html">← Home</a>
+        <div class="eyebrow">A RED HAVEN PUZZLE</div>
+        <div class="bottle-logo" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <h1>Color<br><em>Pour!</em></h1>
+        <p class="sub">Pour the Martian colors into matching bottles. Think ahead — each new stop on the trail gets trickier!</p>
+        <button id="playButton" class="btn primary">▶ Play Level 1</button>
+        <button id="mapButton" class="btn secondary">🗺️ Explore Level Map</button>
+        <p class="note">Tap a bottle to pick it up, then tap where its top color should go.</p>
+      </div>
+    </section>
+
+    <section id="map" class="screen hidden" aria-label="Progression map">
+      <div class="panel map-panel">
+        <div class="map-head">
+          <button id="mapBack" class="small-btn">← Back</button>
+          <div><span class="eyebrow">MARTIAN COLOR TRAIL</span><h2>Your journey</h2></div>
+          <span id="totalStars" class="star-total">⭐ 0</span>
+        </div>
+        <p class="map-sub">Finish a puzzle to unlock the next landing pad.</p>
+        <div id="mapScroll" class="map-scroll"><div id="mapPath" class="map-path"></div></div>
+      </div>
+    </section>
+
+    <section id="win" class="screen hidden">
+      <div class="panel win-panel">
+        <div class="win-icon" aria-hidden="true">🏆</div>
+        <span class="eyebrow">LEVEL COMPLETE</span>
+        <h2>Brilliant pour!</h2>
+        <div id="winStars" class="win-stars">⭐⭐⭐</div>
+        <p id="winSummary" class="sub"></p>
+        <button id="nextButton" class="btn primary">▶ Next Level</button>
+        <button id="winMap" class="btn secondary">🗺️ Level Map</button>
+      </div>
+    </section>
+
+    <script type="module" src="/src/pour.js"></script>
+  </body>
+</html>

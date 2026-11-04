@@ -5,7 +5,7 @@ export default defineConfig({
   base: './',
   build: {
     rollupOptions: {
-      input: { main: 'index.html', redhaven: 'redhaven.html', snakes: 'snakes.html', tetris: 'tetris.html', arrange: 'arrange.html', spell: 'spell.html' }
+      input: { main: 'index.html', redhaven: 'redhaven.html', snakes: 'snakes.html', tetris: 'tetris.html', arrange: 'arrange.html', spell: 'spell.html', pour: 'pour.html' }
     }
   },
   plugins: [VitePWA({
@@ -24,7 +24,7 @@ export default defineConfig({
     manifest: {
       name: 'Red Haven',
       short_name: 'Red Haven',
-      description: 'Low-poly cartoon games on Mars: Red Haven, Snakes, Tetris, and Arrange Numbers.',
+      description: 'Low-poly cartoon games on Mars: colony survival, arcade adventures, and colorful puzzles.',
       theme_color: '#111b20',
       background_color: '#111b20',
       display: 'standalone',

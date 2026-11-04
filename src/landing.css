@@ -66,6 +66,7 @@ h1 span:first-child { color: var(--orange); }
 .big-btn.tetris { background: #5ed3f3; }
 .big-btn.arrange { background: #ffd23f; }
 .big-btn.spell { background: #ff9ccf; }
+.big-btn.pour { background: #b68cf5; }
 .big-btn:hover { transform: translateY(-4px) rotate(-.6deg); box-shadow: 0 11px 0 var(--ink); }
 .big-btn:active { transform: translateY(5px); box-shadow: 0 2px 0 var(--ink); }
 .big-btn:focus-visible { outline: 4px solid var(--yellow); outline-offset: 4px; }
