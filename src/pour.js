@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { CAPACITY, cloneBoard, createPuzzle, isSolved, pour, pourAmount, topColor } from './pour-logic.js';
+import { clampZoom, orbitRadians, pinchZoom } from './pour-camera.js';
 
 const $ = (id) => document.getElementById(id);
 const COLORS = ['#ff6695', '#ffd448', '#4fd8f5', '#9be75b', '#a764f3', '#ff9249', '#438cf3', '#f064cf'];
@@ -79,6 +80,12 @@ class ColorPour {
     this.history = [];
     this.moves = 0;
     this.anim = null;
+    this.orbitAngle = Math.atan2(6, 20);
+    this.orbitTarget = this.orbitAngle;
+    this.zoom = 1;
+    this.zoomTarget = 1;
+    this.contacts = new Map();
+    this.pinch = null;
     this.clock = new THREE.Clock();
     this.setupScene();
     this.buildWorld();
@@ -227,10 +234,26 @@ class ColorPour {
     const height=Math.max(worldHeight,worldWidth/aspect);
     this.camera.left=-height*aspect/2; this.camera.right=height*aspect/2;
     this.camera.top=height/2; this.camera.bottom=-height/2;
-    this.camera.position.set(6,15,20);
-    this.camera.lookAt(0,1.4,0);
-    this.camera.updateProjectionMatrix();
+    this.updateCamera(0,true);
   }
+  updateCamera(dt, immediate = false) {
+    const factor = immediate ? 1 : 1-Math.exp(-dt*12);
+    const previousAngle = this.orbitAngle, previousZoom = this.zoom;
+    this.orbitAngle += (this.orbitTarget-this.orbitAngle)*factor;
+    this.zoom += (this.zoomTarget-this.zoom)*factor;
+    if (Math.abs(this.orbitTarget-this.orbitAngle)<.0001) this.orbitAngle=this.orbitTarget;
+    if (Math.abs(this.zoomTarget-this.zoom)<.0001) this.zoom=this.zoomTarget;
+    if (immediate || this.orbitAngle!==previousAngle) {
+      const distance = Math.hypot(6,20);
+      this.camera.position.set(Math.sin(this.orbitAngle)*distance,15,Math.cos(this.orbitAngle)*distance);
+      this.camera.lookAt(0,1.4,0);
+    }
+    if (immediate || this.zoom!==previousZoom) {
+      this.camera.zoom = this.zoom;
+      this.camera.updateProjectionMatrix();
+    }
+  }
+  setZoom(value) { this.zoomTarget=clampZoom(value); }
   resize() {
     this.renderer.setSize(window.innerWidth,window.innerHeight);
     this.layoutBottles();
@@ -244,6 +267,8 @@ class ColorPour {
     $('nextButton').addEventListener('click',()=>this.start(this.level+1));
     $('undoButton').addEventListener('click',()=>this.undo());
     $('restartButton').addEventListener('click',()=>this.start(this.level));
+    $('zoomOut').addEventListener('click',()=>this.setZoom(this.zoomTarget/1.25));
+    $('zoomIn').addEventListener('click',()=>this.setZoom(this.zoomTarget*1.25));
     $('soundButton').addEventListener('click',()=>{
       this.audio.enabled=!this.audio.enabled;
       try { localStorage.setItem(SOUND,this.audio.enabled?'on':'off'); } catch { /* blocked */ }
@@ -251,7 +276,12 @@ class ColorPour {
       this.audio.unlock(); this.audio.pick();
     });
     $('soundButton').textContent=this.audio.enabled?'🔊':'🔇';
-    this.renderer.domElement.addEventListener('pointerup',(event)=>this.onPointer(event));
+    const canvas=this.renderer.domElement;
+    canvas.addEventListener('pointerdown',(event)=>this.onPointerDown(event));
+    canvas.addEventListener('pointermove',(event)=>this.onPointerMove(event));
+    canvas.addEventListener('pointerup',(event)=>this.onPointerEnd(event));
+    canvas.addEventListener('pointercancel',(event)=>this.onPointerEnd(event));
+    canvas.addEventListener('wheel',(event)=>{ if (this.state==='playing') { event.preventDefault(); this.setZoom(this.zoomTarget*Math.exp(-event.deltaY*.001)); } },{passive:false});
     this.renderer.domElement.addEventListener('contextmenu',(event)=>event.preventDefault());
     document.addEventListener('dblclick',(event)=>event.preventDefault());
     document.addEventListener('keydown',(event)=>{
@@ -275,9 +305,46 @@ class ColorPour {
     $('menu').classList.add('hidden'); $('map').classList.add('hidden'); $('win').classList.add('hidden');
     $('hud').classList.remove('hidden');
     $('levelNumber').textContent=level;
-    $('hint').textContent='Tap a bottle, then tap another to pour.';
+    $('hint').textContent='Tap to pour · pinch to zoom · swipe to orbit.';
     this.layoutBottles(); this.updateHUD();
     this.audio.pick();
+  }
+  onPointerDown(event) {
+    if (this.state!=='playing' || (event.pointerType==='mouse' && event.button!==0)) return;
+    this.renderer.domElement.setPointerCapture(event.pointerId);
+    this.contacts.set(event.pointerId,{startX:event.clientX,startY:event.clientY,x:event.clientX,y:event.clientY,dragged:false,orbit:false,skipTap:false});
+    if (this.contacts.size>=2) {
+      for (const contact of this.contacts.values()) contact.skipTap=true;
+      const [a,b]=[...this.contacts.values()];
+      this.pinch={distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y)),zoom:this.zoomTarget};
+    }
+  }
+  onPointerMove(event) {
+    const contact=this.contacts.get(event.pointerId);
+    if (!contact || this.state!=='playing') return;
+    const lastX=contact.x;
+    contact.x=event.clientX; contact.y=event.clientY;
+    if (this.contacts.size>=2) {
+      const [a,b]=[...this.contacts.values()];
+      if (this.pinch) this.setZoom(pinchZoom(this.pinch.zoom,this.pinch.distance,Math.hypot(a.x-b.x,a.y-b.y)));
+      return;
+    }
+    if (contact.skipTap) return;
+    const dx=contact.x-contact.startX,dy=contact.y-contact.startY;
+    if (!contact.dragged && Math.hypot(dx,dy)>9) {
+      contact.dragged=true;
+      contact.orbit=Math.abs(dx)>Math.abs(dy)*1.1;
+    }
+    if (contact.orbit) this.orbitTarget+=orbitRadians(contact.x-lastX);
+  }
+  onPointerEnd(event) {
+    const contact=this.contacts.get(event.pointerId);
+    if (!contact) return;
+    this.contacts.delete(event.pointerId);
+    if (this.contacts.size<2) this.pinch=null;
+    if (event.type==='pointerup' && !contact.dragged && !contact.skipTap &&
+        Math.hypot(event.clientX-contact.startX,event.clientY-contact.startY)<10) this.onPointer(event);
+    if (this.renderer.domElement.hasPointerCapture(event.pointerId)) this.renderer.domElement.releasePointerCapture(event.pointerId);
   }
   onPointer(event) {
     if (this.state!=='playing'||this.anim) return;
@@ -394,6 +461,7 @@ class ColorPour {
   frame() {
     requestAnimationFrame(()=>this.frame());
     const dt=Math.min(.05,this.clock.getDelta());
+    this.updateCamera(dt);
     if (this.anim) {
       const a=this.anim; a.time+=dt;
       const t=clamp(a.time/.72,0,1);

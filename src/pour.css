@@ -5,7 +5,7 @@ button { font:inherit; color:inherit; cursor:pointer; touch-action:manipulation;
 button:focus-visible,a:focus-visible { outline:4px solid var(--yellow); outline-offset:3px; }
 .hidden { display:none!important; }
 #stage { position:fixed; inset:0; touch-action:none; }
-#stage canvas { display:block; width:100%; height:100%; }
+#stage canvas { display:block; width:100%; height:100%; touch-action:none; }
 .grain { position:fixed; inset:0; pointer-events:none; background-image:radial-gradient(1px 1px at 17% 22%,#fff9 99%,transparent),radial-gradient(2px 2px at 81% 15%,#fff8 99%,transparent),radial-gradient(1px 1px at 63% 68%,#fff8 99%,transparent); opacity:.6; }
 .hud { position:fixed; inset:0; z-index:3; pointer-events:none; padding:max(10px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom)); display:flex; justify-content:space-between; align-items:flex-start; }
 .hud-left,.hud-right { display:flex; align-items:flex-start; gap:8px; pointer-events:auto; }
@@ -17,6 +17,7 @@ button:focus-visible,a:focus-visible { outline:4px solid var(--yellow); outline-
 .hint { position:absolute; left:50%; bottom:calc(92px + env(safe-area-inset-bottom)); transform:translateX(-50%); width:min(440px,calc(100vw - 24px)); text-align:center; font-weight:700; font-size:.92rem; color:#fff; text-shadow:0 2px 2px var(--ink),0 0 8px var(--ink); }
 .tools { position:absolute; bottom:calc(14px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); display:flex; gap:10px; pointer-events:auto; }
 .tool-btn { min-width:118px; padding:9px 16px; border-radius:16px; font-family:'Lilita One'; font-size:1.2rem; }
+.tool-btn.zoom-btn { min-width:46px; width:46px; padding:6px 0; font-size:1.65rem; }
 .tool-btn:disabled { opacity:.5; cursor:default; }
 .round:active,.tool-btn:not(:disabled):active,.small-btn:active { transform:translateY(3px); box-shadow:0 1px 0 var(--ink); }
 .screen { position:fixed; inset:0; z-index:10; display:flex; align-items:center; justify-content:center; padding:16px; overflow-y:auto; background:#21143fb3; touch-action:pan-y; }
@@ -64,5 +65,5 @@ button:focus-visible,a:focus-visible { outline:4px solid var(--yellow); outline-
 .win-panel { width:min(410px,100%); }
 .win-icon { font-size:4rem; line-height:1; }
 .win-stars { font-size:2.5rem; letter-spacing:5px; text-shadow:0 3px 0 var(--ink); }
-@media(max-width:550px) { .round { width:44px; height:44px; font-size:1.15rem; } .level-pill,.move-pill { height:44px; min-width:62px; padding:1px 7px; } .level-pill b,.move-pill b { font-size:1.4rem; } .hud-left,.hud-right { gap:5px; } .hint { bottom:calc(89px + env(safe-area-inset-bottom)); } .tool-btn { min-width:105px; } .panel { padding-left:18px; padding-right:18px; } }
+@media(max-width:550px) { .round { width:44px; height:44px; font-size:1.15rem; } .level-pill,.move-pill { height:44px; min-width:62px; padding:1px 7px; } .level-pill b,.move-pill b { font-size:1.4rem; } .hud-left,.hud-right { gap:5px; } .hint { bottom:calc(89px + env(safe-area-inset-bottom)); } .tool-btn { min-width:96px; } .tool-btn.zoom-btn { min-width:42px; width:42px; } .tools { gap:7px; } .panel { padding-left:18px; padding-right:18px; } }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
