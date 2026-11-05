@@ -27,7 +27,7 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--yellow); outlin
 
 /* ---------- overlays & world-space layers ---------- */
 .overlay { position: fixed; inset: 0; pointer-events: none; opacity: 0; }
-.overlay.bliz { background: radial-gradient(ellipse at center, rgba(235, 244, 255, .25) 30%, rgba(235, 244, 255, .95) 100%); }
+.overlay.bliz { background: radial-gradient(ellipse at center, rgba(235, 244, 255, .25) 30%, rgba(235, 244, 255, .9) 100%); }
 .overlay.cold { background: radial-gradient(ellipse at center, transparent 45%, rgba(110, 190, 255, .75) 100%); box-shadow: inset 0 0 90px rgba(200, 235, 255, .8); }
 .overlay.hurt { background: radial-gradient(ellipse at center, transparent 40%, rgba(255, 60, 60, .55) 100%); }
 .overlay.hurt.on { animation: hurt .45s ease-out; }

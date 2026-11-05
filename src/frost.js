@@ -1539,9 +1539,9 @@ class Frostfall {
     const t = this.t, n = this.nightness();
     this.bliz = lerp(this.bliz, this.blizzard > 0 && this.state !== 'menu' ? 1 : 0, 1 - Math.exp(-dt * 1.5));
     // lighting
-    this.bg.copy(this.dayBg).lerp(this.nightBg, n).lerp(this.blizBg, this.bliz * 0.55);
+    this.bg.copy(this.dayBg).lerp(this.nightBg, n).lerp(this.blizBg, this.bliz * 0.45);
     this.scene.fog.color.copy(this.bg);
-    this.scene.fog.near = lerp(70, 24, this.bliz); this.scene.fog.far = lerp(165, 85, this.bliz);
+    this.scene.fog.near = lerp(70, 32, this.bliz); this.scene.fog.far = lerp(165, 110, this.bliz);
     this.sun.intensity = lerp(2.2, 0.55, n) * (1 - 0.35 * this.bliz);
     this.sun.color.setHex(n > 0.5 ? 0xaab8ff : 0xfff0d8);
     this.hemi.intensity = lerp(1.5, 0.95, n);
@@ -1639,11 +1639,11 @@ class Frostfall {
       }
     }
     sp.needsUpdate = true;
-    this.snow.material.opacity = 0.45 + this.bliz * 0.5;
-    this.snow.material.size = 0.32 + this.bliz * 0.25;
+    this.snow.material.opacity = 0.45 + this.bliz * 0.35;
+    this.snow.material.size = 0.32 + this.bliz * 0.2;
 
     // overlays
-    this.$('bliz').style.opacity = (this.bliz * 0.55).toFixed(3);
+    this.$('bliz').style.opacity = (this.bliz * 0.4).toFixed(3);
     const cold = this.state === 'play' && this.player && !this.player.inWarm ? 1 - this.warmth / 100 : 0;
     this.$('coldVig').style.opacity = (cold * 0.9).toFixed(3);
   }
