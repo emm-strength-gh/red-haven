@@ -207,6 +207,9 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--yellow); outlin
 .panel h2 { margin: 0; font-family: var(--head); font-weight: 400; font-size: 2.2rem; }
 .sub { margin: 0; font-weight: 500; color: var(--muted); font-size: 1.02rem; line-height: 1.4; }
 .best { margin: 0; font-weight: 700; color: var(--orange); min-height: 1.2em; }
+.replace-save { padding: 10px; border: 3px solid var(--ink); border-radius: 16px; background: #fff4ec; }
+.replace-save p { margin: 0 0 9px; font-size: .92rem; font-weight: 700; }
+.replace-save > div { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; }
 .how { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; text-align: left; font-size: .92rem; color: var(--muted); font-weight: 500; }
 .how b { color: var(--ink); display: inline-block; min-width: 64px; }
 .home {

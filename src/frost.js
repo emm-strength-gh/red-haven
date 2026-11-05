@@ -676,6 +676,7 @@ class Frostfall {
     this.$('menu').classList.remove('hidden');
     this.$('pause').classList.add('hidden');
     this.$('over').classList.add('hidden');
+    this.$('replaceSave').classList.add('hidden');
     const save = store.get(SAVE_KEY), best = store.get(BEST_KEY) || 0;
     const cont = this.$('continue');
     cont.classList.toggle('hidden', !save);
@@ -724,6 +725,7 @@ class Frostfall {
     this.closeSheet(); this.closeTray();
     this.banner(`☀️ Day ${this.day}`);
     this.updateHUD();
+    this.save();
   }
 
   scheduleDay() {
@@ -779,7 +781,7 @@ class Frostfall {
     this.save();
   }
 
-  gameOver() {
+  gameOver(reason = 'attack') {
     if (this.state !== 'play') return;
     this.state = 'over';
     this.burst(0, 3, 0, '#ff8a3d', 40, 10);
@@ -789,7 +791,9 @@ class Frostfall {
     const best = Math.max(store.get(BEST_KEY) || 0, this.day);
     store.set(BEST_KEY, best);
     this.closeSheet(); this.closeTray(); this.cancelBuild();
-    this.$('overText').textContent = `The crawlers froze the Heat Core on night ${this.day}.`;
+    this.$('overText').textContent = reason === 'fuel'
+      ? `The Heat Core froze after running out of fuel on day ${this.day}.`
+      : `Crawlers destroyed the Heat Core on night ${this.day}.`;
     this.$('overBest').textContent = `Best: day ${best}`;
     setTimeout(() => { this.$('hud').classList.add('off'); this.$('over').classList.remove('hidden'); }, 1400);
   }
@@ -810,6 +814,7 @@ class Frostfall {
     if (this.blizzard > 0) this.blizzard -= dt;
 
     this.updateEconomy(dt);
+    if (this.state !== 'play') return;
     this.updatePlayer(dt);
     this.updateHelpers(dt);
     if (this.phase === 'night') {
@@ -817,6 +822,7 @@ class Frostfall {
       while (this.spawnQueue.length && this.spawnQueue[0].at <= this.nightT) { const s = this.spawnQueue.shift(); this.spawnEnemy(s.type, s.a, s.hpMul); }
     }
     this.updateEnemies(dt);
+    if (this.state !== 'play') return;
     this.updateDefenses(dt);
     this.updateBolts(dt);
     this.updateNodes(dt);
@@ -1102,7 +1108,7 @@ class Frostfall {
     if (!silent) { b.hitT = 0.15; this.sfx.hit(); }
     if (b.hp <= 0) {
       b.hp = 0;
-      if (b.type === 'core') { this.gameOver(); return; }
+      if (b.type === 'core') { this.gameOver(silent ? 'fuel' : 'attack'); return; }
       this.toast(`💥 Your ${BUILDINGS[b.type].name} was destroyed!`);
       this.destroyBuilding(b);
     }
@@ -1803,8 +1809,10 @@ class Frostfall {
       this.arrowEls.push(el);
     }
     const on = (id, fn) => this.$(id).addEventListener('click', (e) => { this.sfx.unlock(); fn(e); });
-    on('newGame', () => { this.sfx.click(); this.startGame(null); });
-    on('continue', () => { this.sfx.click(); this.startGame(store.get(SAVE_KEY)); });
+    on('newGame', () => { this.sfx.click(); if (store.get(SAVE_KEY)) this.$('replaceSave').classList.remove('hidden'); else this.startGame(null); });
+    on('cancelReplace', () => { this.sfx.click(); this.$('replaceSave').classList.add('hidden'); });
+    on('confirmReplace', () => { this.sfx.click(); this.$('replaceSave').classList.add('hidden'); this.startGame(null); });
+    on('continue', () => { this.sfx.click(); this.$('replaceSave').classList.add('hidden'); this.startGame(store.get(SAVE_KEY)); });
     on('btnPause', () => { this.sfx.click(); this.pause(true); });
     on('resume', () => { this.sfx.click(); this.pause(false); });
     on('quit', () => { this.sfx.click(); this.save(); this.closeSheet(); this.closeTray(); this.cancelBuild(); this.newWorld(Math.floor(Math.random() * 1e9)); this.showMenu(); });
