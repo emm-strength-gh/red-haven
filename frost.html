@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#2a1f3d" />
+    <meta name="description" content="Frostfall — build a polar outpost on Mars, keep the Heat Core burning, recruit helper bots and defend against night crawlers." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lilita+One&display=swap" />
+    <link rel="stylesheet" href="/src/frost.css" />
+    <title>Frostfall — Red Haven</title>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="bliz" class="overlay bliz"></div>
+    <div id="coldVig" class="overlay cold"></div>
+    <div id="hurt" class="overlay hurt"></div>
+    <div id="floaters" class="layer"></div>
+    <div id="arrows" class="layer"></div>
+    <div id="joy" class="joy hidden"><i></i></div>
+
+    <div id="hud" class="hud off">
+      <div class="res-row" id="resRow"></div>
+      <div class="bars">
+        <div class="bar hp"><span>❤️</span><i><em id="hpFill"></em></i></div>
+        <div class="bar warm" id="warmBar"><span>🌡️</span><i><em id="warmFill"></em></i></div>
+      </div>
+      <div class="day-pill" id="dayPill"><span id="dayIcon">☀️</span><b id="dayText">Day 1</b><i><em id="dayFill"></em></i><small id="enemyCount"></small></div>
+      <div class="goal hidden" id="goal"><span>🎯</span><span id="goalText"></span></div>
+      <div class="hud-btns">
+        <button id="btnSound" class="round" aria-label="Toggle sound">🔊</button>
+        <button id="btnPause" class="round" aria-label="Pause">⏸</button>
+      </div>
+      <div id="banner" class="banner"></div>
+      <div id="toast" class="toast" role="status"></div>
+      <div id="buildHint" class="build-hint hidden"><span id="buildHintText"></span><button id="cancelBuild" class="btn sm">✖ Cancel</button></div>
+      <div class="dock">
+        <button id="btnHelpers" class="chip-btn" aria-label="Helper bots">🤖 <b id="helperCount">1/2</b></button>
+        <button id="btnBuild" class="build-btn" aria-label="Build"><span>🔨</span><small>Build</small></button>
+      </div>
+      <div id="tray" class="tray hidden">
+        <div class="tray-head"><b>Build</b><small>Buildings go inside the warm zone</small><button id="closeTray" class="round sm" aria-label="Close">✕</button></div>
+        <div id="cards" class="cards"></div>
+      </div>
+      <div id="sheet" class="sheet hidden"></div>
+    </div>
+
+    <section id="menu" class="screen">
+      <div class="panel">
+        <a class="home" href="index.html">← Home</a>
+        <h1>Frostfall</h1>
+        <p class="sub">Winter has come to the Martian pole. Keep the <b>Heat Core</b> burning, build up your outpost, recruit helper bots and hold off the crawlers that come out at night.</p>
+        <button class="btn green big hidden" id="continue">▶ Continue</button>
+        <button class="btn big" id="newGame">▶ Play</button>
+        <p class="best" id="bestLine"></p>
+        <ul class="how">
+          <li><b>Move</b> drag anywhere · WASD / arrows · tap the ground</li>
+          <li><b>Gather</b> walk up to ice, ore and carbon rocks</li>
+          <li><b>Build</b> 🔨 button · tap a building to upgrade it</li>
+          <li><b>Zoom</b> pinch or mouse wheel</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="pause" class="screen hidden">
+      <div class="panel">
+        <h2>Paused</h2>
+        <button class="btn green big" id="resume">▶ Resume</button>
+        <button class="btn" id="quit">💾 Save &amp; quit</button>
+      </div>
+    </section>
+
+    <section id="over" class="screen hidden">
+      <div class="panel">
+        <h2>The core went cold</h2>
+        <p class="sub" id="overText"></p>
+        <p class="best" id="overBest"></p>
+        <button class="btn green big" id="again">▶ Try again</button>
+        <button class="btn" id="overMenu">Menu</button>
+      </div>
+    </section>
+
+    <script type="module" src="/src/frost.js"></script>
+  </body>
+</html>
