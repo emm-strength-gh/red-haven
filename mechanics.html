@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#9381c9" />
+    <meta name="description" content="Body Mechanics — pose and animate a colorful low-poly human mannequin with joint limits and adjustable proportions." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lilita+One&display=swap" />
+    <link rel="stylesheet" href="/src/mechanics.css" />
+    <title>Body Mechanics — Pose Studio</title>
+  </head>
+  <body>
+    <main id="app">
+      <div id="stage" aria-label="Interactive 3D posing studio"></div>
+      <div id="jointHandles" aria-label="Mannequin joint controls"></div>
+
+      <header class="topbar">
+        <a class="home" href="index.html">← Games</a>
+        <div class="brand"><span>Body</span> Mechanics <small>POSE STUDIO</small></div>
+        <div class="top-actions">
+          <button class="icon-btn" id="muscleToggle" aria-pressed="true" title="Toggle muscle layer">💪</button>
+          <button class="icon-btn" id="resetPose" title="Reset pose">↺</button>
+          <button class="icon-btn mobile-only" id="panelToggle" title="Open controls">☰</button>
+        </div>
+      </header>
+
+      <section class="view-card" aria-label="Camera views">
+        <b>VIEW</b>
+        <button data-view="front">Front</button>
+        <button data-view="side">Side</button>
+        <button data-view="three" class="active">3/4</button>
+        <button data-view="back">Back</button>
+      </section>
+
+      <div class="hint" id="hint"><b>Drag a joint</b> to pose · drag the floor to orbit · pinch or wheel to zoom</div>
+      <div class="limits"><span>✓</span> Human joint limits active</div>
+
+      <aside class="panel" id="panel">
+        <div class="panel-head">
+          <div><small>ACTIVE TOOL</small><h1>Pose controls</h1></div>
+          <button class="close mobile-only" id="panelClose" aria-label="Close controls">×</button>
+        </div>
+        <nav class="tabs" aria-label="Body Mechanics tools">
+          <button class="active" data-tab="pose">Pose</button>
+          <button data-tab="proportions">Proportions</button>
+          <button data-tab="sequence">Animation</button>
+        </nav>
+
+        <div class="tab active" id="tab-pose">
+          <section class="tool-section">
+            <div class="section-title"><b>Quick poses</b><span>Strength training</span></div>
+            <div class="preset-grid">
+              <button data-preset="neutral"><i>🧍</i>Neutral</button>
+              <button data-preset="squat"><i>🏋️</i>Squat</button>
+              <button data-preset="deadlift"><i>⬆️</i>Deadlift</button>
+              <button data-preset="bench"><i>🛏️</i>Bench</button>
+              <button data-preset="overhead"><i>🙌</i>Overhead</button>
+              <button data-preset="runner"><i>🏃</i>Runner</button>
+            </div>
+          </section>
+
+          <section class="tool-section joint-editor" id="jointEditor">
+            <div class="section-title"><b id="jointTitle">Select a joint</b><span id="jointSide">Tap a colored handle</span></div>
+            <div id="jointSliders" class="sliders empty"><p>Each joint is restricted to a practical human range. Drag a handle for fast posing or use the sliders for precision.</p></div>
+          </section>
+
+          <section class="tool-section">
+            <div class="section-title"><b>Whole body</b><span>Pitch · yaw · roll</span></div>
+            <div class="sliders" id="bodySliders"></div>
+          </section>
+        </div>
+
+        <div class="tab" id="tab-proportions">
+          <section class="tool-section intro">
+            <div class="section-title"><b>Body proportions</b><span>Live rig rebuild</span></div>
+            <p>Change limb and torso lengths while every saved angle stays attached to the same joint.</p>
+          </section>
+          <div class="sliders proportions" id="proportionSliders"></div>
+          <button class="wide-btn pale" id="resetProportions">Reset proportions</button>
+        </div>
+
+        <div class="tab" id="tab-sequence">
+          <section class="tool-section intro">
+            <div class="section-title"><b>Pose sequence</b><span id="poseCount">0 poses</span></div>
+            <p>Save any number of poses. Playback blends joint angles and proportions with smooth timing.</p>
+          </section>
+          <div class="sequence-actions">
+            <button class="wide-btn green" id="addPose">＋ Add current pose</button>
+            <button class="wide-btn pale" id="updatePose" disabled>Update selected</button>
+          </div>
+          <div class="pose-list" id="poseList"></div>
+          <div class="tempo">
+            <label for="poseDuration"><b>Seconds per pose</b><output id="poseDurationOut">1.2s</output></label>
+            <input id="poseDuration" type="range" min="0.4" max="3" step="0.1" value="1.2" />
+            <label class="check"><input id="loopPlayback" type="checkbox" checked /><span></span>Loop sequence</label>
+          </div>
+        </div>
+      </aside>
+
+      <div class="transport">
+        <button class="play" id="playSequence"><span>▶</span><b>Play</b></button>
+        <div class="transport-copy"><b id="transportTitle">Build a sequence</b><small id="transportStatus">Add two or more poses to animate</small></div>
+        <button class="stop" id="stopSequence" disabled>■</button>
+      </div>
+      <div class="toast" id="toast" role="status"></div>
+    </main>
+    <script type="module" src="/src/mechanics.js"></script>
+  </body>
+</html>
