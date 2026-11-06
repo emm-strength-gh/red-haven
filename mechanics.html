@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-    <meta name="theme-color" content="#9381c9" />
+    <meta name="theme-color" content="#6436d9" />
     <meta name="description" content="Body Mechanics — pose and animate a colorful low-poly human mannequin with joint limits and adjustable proportions." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,6 +33,7 @@
         <button data-view="side">Side</button>
         <button data-view="three" class="active">3/4</button>
         <button data-view="back">Back</button>
+        <button id="jointToggle" aria-controls="jointHandles" aria-pressed="true">Hide joints</button>
       </section>
 
       <div class="hint" id="hint"><b>Drag a joint</b> to pose · drag the floor to orbit · pinch or wheel to zoom</div>

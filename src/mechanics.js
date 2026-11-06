@@ -6,6 +6,7 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const ease = (t) => t * t * (3 - 2 * t);
 const shortest = (a, b) => a + ((((b - a) + 540) % 360) - 180);
 const STORE_KEY = 'body-mechanics-pose-library-v1';
+const JOINT_VISIBILITY_KEY = 'body-mechanics-joints-visible';
 
 const BASE = {
   torso: 1.85, neck: 0.28, head: 0.72, upperArm: 1.25, forearm: 1.1,
@@ -14,20 +15,20 @@ const BASE = {
 const DEFAULT_PROPORTIONS = Object.fromEntries(Object.keys(BASE).map((k) => [k, 1]));
 
 const JOINT_SPECS = {
-  spine: { label: 'Spine', side: 'Core', color: '#efa99b', axes: [['x','Pitch / bend',-45,45],['y','Yaw / twist',-55,55],['z','Roll / side bend',-35,35]] },
-  neck: { label: 'Neck', side: 'Head', color: '#f3d98b', axes: [['x','Look up / down',-40,50],['y','Turn',-70,70],['z','Tilt',-35,35]] },
-  leftShoulder: { label: 'Left shoulder', side: 'Left arm', color: '#efa8c5', axes: [['x','Flex / extend',-120,180],['z','Abduct / adduct',-170,60],['y','Internal / external',-80,80]] },
-  rightShoulder: { label: 'Right shoulder', side: 'Right arm', color: '#efa8c5', axes: [['x','Flex / extend',-120,180],['z','Abduct / adduct',-60,170],['y','Internal / external',-80,80]] },
-  leftElbow: { label: 'Left elbow', side: 'Left arm', color: '#9ccbed', axes: [['x','Flexion',0,145],['y','Forearm rotation',-85,85]] },
-  rightElbow: { label: 'Right elbow', side: 'Right arm', color: '#9ccbed', axes: [['x','Flexion',0,145],['y','Forearm rotation',-85,85]] },
-  leftWrist: { label: 'Left wrist', side: 'Left hand', color: '#9edbc6', axes: [['x','Flex / extend',-65,65],['z','Side deviation',-30,30]] },
-  rightWrist: { label: 'Right wrist', side: 'Right hand', color: '#9edbc6', axes: [['x','Flex / extend',-65,65],['z','Side deviation',-30,30]] },
-  leftHip: { label: 'Left hip', side: 'Left leg', color: '#baa6df', axes: [['x','Flex / extend',-120,45],['z','Abduct / adduct',-45,50],['y','Internal / external',-40,40]] },
-  rightHip: { label: 'Right hip', side: 'Right leg', color: '#baa6df', axes: [['x','Flex / extend',-120,45],['z','Abduct / adduct',-50,45],['y','Internal / external',-40,40]] },
-  leftKnee: { label: 'Left knee', side: 'Left leg', color: '#f3d98b', axes: [['x','Flexion',0,145],['y','Small rotation',-12,12]] },
-  rightKnee: { label: 'Right knee', side: 'Right leg', color: '#f3d98b', axes: [['x','Flexion',0,145],['y','Small rotation',-12,12]] },
-  leftAnkle: { label: 'Left ankle', side: 'Left foot', color: '#9edbc6', axes: [['x','Dorsi / plantar flex',-45,35],['z','Inversion / eversion',-20,20]] },
-  rightAnkle: { label: 'Right ankle', side: 'Right foot', color: '#9edbc6', axes: [['x','Dorsi / plantar flex',-45,35],['z','Inversion / eversion',-20,20]] },
+  spine: { label: 'Spine', side: 'Core', color: '#f77525', axes: [['x','Pitch / bend',-45,45],['y','Yaw / twist',-55,55],['z','Roll / side bend',-35,35]] },
+  neck: { label: 'Neck', side: 'Head', color: '#ffbe19', axes: [['x','Look up / down',-40,50],['y','Turn',-70,70],['z','Tilt',-35,35]] },
+  leftShoulder: { label: 'Left shoulder', side: 'Left arm', color: '#f6378e', axes: [['x','Flex / extend',-120,180],['z','Abduct / adduct',-170,60],['y','Internal / external',-80,80]] },
+  rightShoulder: { label: 'Right shoulder', side: 'Right arm', color: '#f6378e', axes: [['x','Flex / extend',-120,180],['z','Abduct / adduct',-60,170],['y','Internal / external',-80,80]] },
+  leftElbow: { label: 'Left elbow', side: 'Left arm', color: '#009bf5', axes: [['x','Flexion',0,145],['y','Forearm rotation',-85,85]] },
+  rightElbow: { label: 'Right elbow', side: 'Right arm', color: '#009bf5', axes: [['x','Flexion',0,145],['y','Forearm rotation',-85,85]] },
+  leftWrist: { label: 'Left wrist', side: 'Left hand', color: '#18c985', axes: [['x','Flex / extend',-65,65],['z','Side deviation',-30,30]] },
+  rightWrist: { label: 'Right wrist', side: 'Right hand', color: '#18c985', axes: [['x','Flex / extend',-65,65],['z','Side deviation',-30,30]] },
+  leftHip: { label: 'Left hip', side: 'Left leg', color: '#7940df', axes: [['x','Flex / extend',-120,45],['z','Abduct / adduct',-45,50],['y','Internal / external',-40,40]] },
+  rightHip: { label: 'Right hip', side: 'Right leg', color: '#7940df', axes: [['x','Flex / extend',-120,45],['z','Abduct / adduct',-50,45],['y','Internal / external',-40,40]] },
+  leftKnee: { label: 'Left knee', side: 'Left leg', color: '#ffbe19', axes: [['x','Flexion',0,145],['y','Small rotation',-12,12]] },
+  rightKnee: { label: 'Right knee', side: 'Right leg', color: '#ffbe19', axes: [['x','Flexion',0,145],['y','Small rotation',-12,12]] },
+  leftAnkle: { label: 'Left ankle', side: 'Left foot', color: '#18c985', axes: [['x','Dorsi / plantar flex',-45,35],['z','Inversion / eversion',-20,20]] },
+  rightAnkle: { label: 'Right ankle', side: 'Right foot', color: '#18c985', axes: [['x','Dorsi / plantar flex',-45,35],['z','Inversion / eversion',-20,20]] },
 };
 
 const zeroJoints = () => Object.fromEntries(Object.keys(JOINT_SPECS).map((id) => [id, { x: 0, y: 0, z: 0 }]));
@@ -65,6 +66,8 @@ class BodyMechanics {
     this.equipmentMode = 'none';
     this.selectedJoint = null;
     this.musclesVisible = true;
+    this.jointsVisible = true;
+    try { this.jointsVisible = localStorage.getItem(JOINT_VISIBILITY_KEY) !== 'false'; } catch {}
     this.poses = [];
     this.selectedPose = -1;
     this.animation = null;
@@ -83,8 +86,8 @@ class BodyMechanics {
 
   initScene() {
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color('#d8ebff');
-    this.scene.fog = new THREE.Fog('#d8ebff', 18, 32);
+    this.scene.background = new THREE.Color('#198acb');
+    this.scene.fog = new THREE.Fog('#198acb', 18, 32);
     this.camera = new THREE.PerspectiveCamera(28, 1, .1, 80);
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
@@ -93,21 +96,20 @@ class BodyMechanics {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.$('stage').appendChild(this.renderer.domElement);
 
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x8a73b5, 2.2); this.scene.add(hemi);
-    const key = new THREE.DirectionalLight(0xfff3db, 4.2); key.position.set(-6, 11, 8); key.castShadow = true; key.shadow.mapSize.set(1024,1024); key.shadow.camera.left=-8; key.shadow.camera.right=8; key.shadow.camera.top=10; key.shadow.camera.bottom=-3; this.scene.add(key);
-    const rim = new THREE.DirectionalLight(0x8fc6ff, 2.4); rim.position.set(7,6,-8); this.scene.add(rim);
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x544080, 1.2); this.scene.add(hemi);
+    const key = new THREE.DirectionalLight(0xfff3db, 2); key.position.set(-6, 11, 8); key.castShadow = true; key.shadow.mapSize.set(1024,1024); key.shadow.camera.left=-8; key.shadow.camera.right=8; key.shadow.camera.top=10; key.shadow.camera.bottom=-3; this.scene.add(key);
+    const rim = new THREE.DirectionalLight(0x56aeff, 1); rim.position.set(7,6,-8); this.scene.add(rim);
 
     this.mat = {
-      floor: this.toon('#f7e9ff'), floorEdge: this.toon('#9381c9'), skin: this.toon('#f2cfa5'), skin2: this.toon('#e8bd91'),
-      joint: this.toon('#9381c9'), muscle: new THREE.MeshToonMaterial({ color:'#e892a2', transparent:true, opacity:.78, depthWrite:false }),
-      muscle2: new THREE.MeshToonMaterial({ color:'#efae8b', transparent:true, opacity:.72, depthWrite:false }),
-      dark: this.toon('#3f3858'), metal: this.toon('#8993ad'), plate: this.toon('#aaa0d5'), bench: this.toon('#efa8c5'),
+      floor: this.toon('#25458e'), floorEdge: this.toon('#ffbe19'), skin: this.toon('#dfa14a'), skin2: this.toon('#b9742d'),
+      joint: this.toon('#6436d9'), muscle: new THREE.MeshToonMaterial({ color:'#e83c53', transparent:true, opacity:.9, depthWrite:false }),
+      muscle2: new THREE.MeshToonMaterial({ color:'#f77525', transparent:true, opacity:.9, depthWrite:false }),
+      dark: this.toon('#201938'),
     };
     const floor = new THREE.Mesh(new THREE.CylinderGeometry(5.4,5.65,.25,48), this.mat.floor); floor.position.y=-.18; floor.receiveShadow=true; this.scene.add(floor);
     const edge = new THREE.Mesh(new THREE.TorusGeometry(5.5,.1,8,48), this.mat.floorEdge); edge.rotation.x=Math.PI/2; edge.position.y=-.03; this.scene.add(edge);
-    const grid = new THREE.GridHelper(10,20,0x9d78ef,0xcbb7e8); grid.position.y=-.04; grid.material.opacity=.32; grid.material.transparent=true; this.scene.add(grid);
+    const grid = new THREE.GridHelper(10,20,0x16c9ef,0x5685ca); grid.position.y=-.04; grid.material.opacity=.45; grid.material.transparent=true; this.scene.add(grid);
     this.addStudioDecor();
-    this.buildEquipment();
     this.bindStage();
     window.addEventListener('resize', () => this.resize());
   }
@@ -117,28 +119,15 @@ class BodyMechanics {
     const m = new THREE.Mesh(geo, mat); m.position.set(...pos); m.rotation.set(...rot); m.castShadow=true; m.receiveShadow=true; parent.add(m); return m;
   }
   addStudioDecor() {
-    const colors=['#ffb3d7','#ffe28a','#9ce9d2','#a9d3ff','#c5adff'];
+    const colors=['#f6378e','#ffbe19','#18c985','#009bf5','#7940df'];
     for(let i=0;i<10;i++) {
       const a=i/10*Math.PI*2, r=7.2+(i%2)*.7;
       const g=new THREE.Group(); g.position.set(Math.cos(a)*r,.7+((i*7)%4)*.65,Math.sin(a)*r); g.rotation.y=-a;
       this.mesh(new THREE.SphereGeometry(.32+(i%3)*.08,8,6),this.toon(colors[i%colors.length]),g);
       this.scene.add(g);
     }
-    const archMat=this.toon('#c7b5f3');
+    const archMat=this.toon('#7940df');
     for(const x of [-5.8,5.8]) { const p=this.mesh(new THREE.CapsuleGeometry(.18,5.4,3,8),archMat,this.scene,[x,2.7,-4.6]); p.scale.z=.75; }
-  }
-
-  buildEquipment() {
-    this.equipment = new THREE.Group(); this.scene.add(this.equipment);
-    this.barbell = new THREE.Group();
-    const bar=this.mesh(new THREE.CylinderGeometry(.055,.055,4.4,10),this.mat.metal,this.barbell,[0,0,0],[0,0,Math.PI/2]);
-    for(const x of [-2.0,-1.78,1.78,2.0]) this.mesh(new THREE.CylinderGeometry(.3,.3,.16,16),this.mat.plate,this.barbell,[x,0,0],[0,0,Math.PI/2]);
-    this.equipment.add(this.barbell);
-    this.bench = new THREE.Group();
-    this.mesh(new THREE.BoxGeometry(1.05,.22,3.2),this.mat.bench,this.bench,[0,.72,.1]);
-    for(const z of [-1.1,1.1]) for(const x of [-.38,.38]) this.mesh(new THREE.CylinderGeometry(.08,.08,.72,8),this.mat.dark,this.bench,[x,.34,z]);
-    this.equipment.add(this.bench);
-    this.updateEquipment();
   }
 
   dims() { const d={}; for(const k in BASE) d[k]=BASE[k]*this.proportions[k]; return d; }
@@ -218,7 +207,7 @@ class BodyMechanics {
     }
     this.body.rotation.set(this.bodyRotation.x*DEG,this.bodyRotation.y*DEG,this.bodyRotation.z*DEG);
     this.body.position.y=this.naturalRoot()+this.rootOffset;
-    this.updateMuscles(); this.updateEquipment();
+    this.updateMuscles();
   }
   updateMuscles() {
     for(const m of this.muscles) {
@@ -229,18 +218,6 @@ class BodyMechanics {
       m.scale.x=1+clamp(flex,0,1)*.16; m.scale.z=1+clamp(flex,0,1)*.2; m.visible=this.musclesVisible;
     }
   }
-  updateEquipment() {
-    if(!this.barbell||!this.body) return;
-    const d=this.dims(), root=this.body.position.y;
-    this.barbell.visible=['squat','deadlift','overhead','bench'].includes(this.equipmentMode);
-    this.bench.visible=this.equipmentMode==='bench';
-    if(this.equipmentMode==='squat') this.barbell.position.set(0,root+d.torso*.78,.28);
-    else if(this.equipmentMode==='deadlift') this.barbell.position.set(0,.35,-.58);
-    else if(this.equipmentMode==='overhead') this.barbell.position.set(0,root+d.torso+d.upperArm+d.forearm+.18,-.1);
-    else if(this.equipmentMode==='bench') this.barbell.position.set(0,2.25,-.55);
-    this.bench.position.set(0,0,.15);
-  }
-
   buildHandles() {
     const root=this.$('jointHandles'); root.innerHTML=''; this.handleEls={};
     for(const [id,spec] of Object.entries(JOINT_SPECS)) {
@@ -295,6 +272,12 @@ class BodyMechanics {
   }
 
   initUI() {
+    this.$('jointToggle').addEventListener('click',()=>{
+      this.jointsVisible=!this.jointsVisible;
+      try { localStorage.setItem(JOINT_VISIBILITY_KEY,String(this.jointsVisible)); } catch {}
+      this.syncJointVisibility();
+    });
+    this.syncJointVisibility();
     document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>this.openTab(b.dataset.tab)));
     document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>this.applyPreset(b.dataset.preset)));
     document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>this.setView(b.dataset.view,b)));
@@ -314,6 +297,14 @@ class BodyMechanics {
   openTab(name) {
     document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
     document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.id===`tab-${name}`));
+  }
+  syncJointVisibility() {
+    this.$('jointHandles').hidden=!this.jointsVisible;
+    this.$('jointToggle').textContent=this.jointsVisible?'Hide joints':'Show joints';
+    this.$('jointToggle').setAttribute('aria-pressed',String(this.jointsVisible));
+    this.$('hint').innerHTML=this.jointsVisible
+      ? '<b>Drag a joint</b> to pose · drag the floor to orbit · pinch or wheel to zoom'
+      : '<b>Joints hidden</b> · drag the floor to orbit · pinch or wheel to zoom';
   }
   slider(container,{label,min,max,step=1,value,unit='°',onInput}) {
     const row=document.createElement('div');row.className='slider-row';
@@ -380,7 +371,7 @@ class BodyMechanics {
   prepareTweenTarget(to) {
     const changed=Object.keys(DEFAULT_PROPORTIONS).some(k=>Math.abs((to.proportions?.[k]??1)-this.proportions[k])>.001);
     if(changed){this.proportions={...DEFAULT_PROPORTIONS,...to.proportions};this.buildRig();this.renderProportionSliders();}
-    this.equipmentMode=to.equipment||'none';this.updateEquipment();
+    this.equipmentMode=to.equipment||'none';
   }
   updateAnimation(now) {
     const a=this.animation;if(!a)return;const duration=+this.$('poseDuration').value*1000;const t=clamp((now-a.start)/duration,0,1),q=ease(t);
@@ -401,6 +392,7 @@ class BodyMechanics {
     const sp=Math.sin(c.pitch);this.camera.position.set(this.lookTarget.x+Math.sin(c.yaw)*sp*c.distance,this.lookTarget.y+Math.cos(c.pitch)*c.distance,this.lookTarget.z+Math.cos(c.yaw)*sp*c.distance);this.camera.lookAt(this.lookTarget);
   }
   updateHandles() {
+    if(!this.jointsVisible)return;
     const rect=this.renderer.domElement.getBoundingClientRect(),v=new THREE.Vector3();
     for(const [id,j] of Object.entries(this.joints)){j.pivot.getWorldPosition(v);v.project(this.camera);const el=this.handleEls[id];const visible=v.z>-1&&v.z<1&&v.x>-1.1&&v.x<1.1&&v.y>-1.1&&v.y<1.1;el.style.display=visible?'flex':'none';if(visible){el.style.left=`${(v.x*.5+.5)*rect.width}px`;el.style.top=`${(-v.y*.5+.5)*rect.height}px`;el.style.opacity=String(clamp(1-(v.z-.5)*.4,.45,1));}}
   }
