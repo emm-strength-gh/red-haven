@@ -19,8 +19,8 @@ const JOINT_SPECS = {
   neck: { label: 'Neck', side: 'Head', color: '#ffbe19', axes: [['x','Look up / down',-40,50],['y','Turn',-70,70],['z','Tilt',-35,35]] },
   leftShoulder: { label: 'Left shoulder', side: 'Left arm', color: '#f6378e', axes: [['x','Flex / extend',-120,180],['z','Abduct / adduct',-170,60],['y','Internal / external',-80,80]] },
   rightShoulder: { label: 'Right shoulder', side: 'Right arm', color: '#f6378e', axes: [['x','Flex / extend',-120,180],['z','Abduct / adduct',-60,170],['y','Internal / external',-80,80]] },
-  leftElbow: { label: 'Left elbow', side: 'Left arm', color: '#009bf5', axes: [['x','Flexion',0,145],['y','Forearm rotation',-85,85]] },
-  rightElbow: { label: 'Right elbow', side: 'Right arm', color: '#009bf5', axes: [['x','Flexion',0,145],['y','Forearm rotation',-85,85]] },
+  leftElbow: { label: 'Left elbow', side: 'Left arm', color: '#009bf5', rotationSigns: { x: -1 }, axes: [['x','Flexion',0,145],['y','Forearm rotation',-85,85]] },
+  rightElbow: { label: 'Right elbow', side: 'Right arm', color: '#009bf5', rotationSigns: { x: -1 }, axes: [['x','Flexion',0,145],['y','Forearm rotation',-85,85]] },
   leftWrist: { label: 'Left wrist', side: 'Left hand', color: '#18c985', axes: [['x','Flex / extend',-65,65],['z','Side deviation',-30,30]] },
   rightWrist: { label: 'Right wrist', side: 'Right hand', color: '#18c985', axes: [['x','Flex / extend',-65,65],['z','Side deviation',-30,30]] },
   leftHip: { label: 'Left hip', side: 'Left leg', color: '#7940df', axes: [['x','Flex / extend',-120,45],['z','Abduct / adduct',-45,50],['y','Internal / external',-40,40]] },
@@ -203,12 +203,20 @@ class BodyMechanics {
 
   applyState() {
     if(!this.body) return;
-    for(const [id,j] of Object.entries(this.joints)) {
-      const s=this.jointState[id]||{x:0,y:0,z:0}; j.pivot.rotation.set(s.x*DEG,s.y*DEG,s.z*DEG);
-    }
+    for(const id of Object.keys(this.joints))this.applyJointState(id);
     this.body.rotation.set(this.bodyRotation.x*DEG,this.bodyRotation.y*DEG,this.bodyRotation.z*DEG);
     this.body.position.y=this.naturalRoot()+this.rootOffset;
     this.updateMuscles();
+  }
+  applyJointState(id) {
+    const joint=this.joints[id];if(!joint)return;
+    const state=this.jointState[id]||{x:0,y:0,z:0},signs=joint.spec.rotationSigns||{};
+    // Keep saved/UI angles anatomical: positive elbow flexion bends toward +Z.
+    joint.pivot.rotation.set(
+      state.x*DEG*(signs.x??1),
+      state.y*DEG*(signs.y??1),
+      state.z*DEG*(signs.z??1)
+    );
   }
   updateMuscles() {
     for(const m of this.muscles) {
@@ -251,7 +259,7 @@ class BodyMechanics {
   setJoint(id,axis,value,refresh=true) {
     const def=JOINT_SPECS[id].axes.find(a=>a[0]===axis); if(!def)return;
     this.jointState[id][axis]=clamp(+value,def[2],def[3]);
-    if(this.joints[id])this.joints[id].pivot.rotation[axis]=this.jointState[id][axis]*DEG;
+    this.applyJointState(id);
     this.updateMuscles(); if(refresh)this.renderJointEditor();
   }
 
