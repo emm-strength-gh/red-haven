@@ -176,7 +176,8 @@ class BodyMechanics {
       const knee=this.addJoint(`${side}Knee`,thigh.end,[0,0,0]);
       const shin=this.segment(knee,d.shin,.205,-1,this.mat.skin2,`${side}Shin`); this.addMuscleShell(shin,d.shin,.225,-1,'calf');
       const ankle=this.addJoint(`${side}Ankle`,shin.end,[0,0,0]);
-      const foot=this.mesh(new THREE.CapsuleGeometry(.17,Math.max(.05,d.foot-.34),3,8),this.mat.skin,ankle,[0,-.12,-d.foot*.35],[Math.PI/2,0,0]); foot.scale.set(.8,1,.55);
+      // The face and the toes share +Z as forward in the neutral pose.
+      const foot=this.mesh(new THREE.CapsuleGeometry(.17,Math.max(.05,d.foot-.34),3,8),this.mat.skin,ankle,[0,-.12,d.foot*.35],[Math.PI/2,0,0]); foot.scale.set(.8,1,.55);
     }
     this.applyState();
   }
@@ -196,7 +197,7 @@ class BodyMechanics {
   }
   addMuscleShell(seg,length,radius,dir,type) {
     const geo=new THREE.CapsuleGeometry(radius,Math.max(.02,length*.7-radius*2),3,8);
-    const m=this.mesh(geo,type==='core'?this.mat.muscle2:this.mat.muscle,seg.group,[0,dir*length*.48,-radius*.17]);
+    const m=this.mesh(geo,type==='core'?this.mat.muscle2:this.mat.muscle,seg.group,[0,dir*length*.48,radius*.17]);
     m.userData={type,side:seg.name.startsWith('left')?'left':seg.name.startsWith('right')?'right':'core'}; this.muscles.push(m); return m;
   }
 
