@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#0b1026" />
+    <meta name="description" content="Tumble Temple — flip and roll a stone block across floating gothic ruins and drop it into the glowing pit. 66 puzzles across three ancient temples." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Pirata+One&display=swap" />
+    <link rel="stylesheet" href="/src/tumble.css" />
+    <title>Tumble Temple — Red Haven</title>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <div id="fade" class="fade" aria-hidden="true"></div>
+
+    <header id="hud" class="hud hidden">
+      <div class="hud-row">
+        <button id="hudLevels" class="round" aria-label="Level select">☰</button>
+        <div class="level-pill"><small id="templeName">Crypt of Ashes</small><b id="levelName">I · 1</b></div>
+        <div class="spacer"></div>
+        <div class="moves-pill"><small>Moves</small><b><span id="moveCount">0</span><i>/ <span id="parCount">0</span></i></b></div>
+        <button id="soundButton" class="round" aria-label="Toggle sound">🔊</button>
+        <button id="restartButton" class="round" aria-label="Restart level">⟲</button>
+      </div>
+      <div id="hint" class="hint" role="status"></div>
+      <div class="pad" id="pad" aria-label="Roll the block">
+        <button data-dir="up" aria-label="Roll up">▲</button>
+        <button data-dir="left" aria-label="Roll left">◀</button>
+        <button data-dir="right" aria-label="Roll right">▶</button>
+        <button data-dir="down" aria-label="Roll down">▼</button>
+      </div>
+    </header>
+
+    <section id="menu" class="screen">
+      <div class="panel menu-panel">
+        <a class="home" href="index.html">← Home</a>
+        <div class="crest" aria-hidden="true"><i></i></div>
+        <div class="eyebrow">An ancient puzzle</div>
+        <h1>Tumble<br><em>Temple</em></h1>
+        <p class="sub">Flip the stone monolith end over end across crumbling gothic ruins. Stand it upright in the glowing pit — and mind the edges.</p>
+        <button id="playButton" class="btn primary">▶ Play</button>
+        <button id="levelsButton" class="btn secondary">☰ Choose a Level</button>
+        <p class="note">Swipe, arrow keys or WASD to roll · R to restart</p>
+      </div>
+    </section>
+
+    <section id="levels" class="screen hidden" aria-label="Level select">
+      <div class="panel levels-panel">
+        <div class="levels-head">
+          <button id="levelsBack" class="small-btn">← Back</button>
+          <h2>The Temples</h2>
+          <span id="starTotal" class="star-total">✦ 0</span>
+        </div>
+        <div id="templeList" class="temple-list"></div>
+      </div>
+    </section>
+
+    <section id="win" class="screen hidden">
+      <div class="panel win-panel">
+        <div class="eyebrow">Level complete</div>
+        <h2 id="winTitle">The pit is sealed</h2>
+        <div id="winStars" class="win-stars"></div>
+        <p id="winSummary" class="sub"></p>
+        <button id="nextButton" class="btn primary">▶ Next Level</button>
+        <div class="row">
+          <button id="replayButton" class="btn secondary">⟲ Replay</button>
+          <button id="winLevels" class="btn secondary">☰ Levels</button>
+        </div>
+      </div>
+    </section>
+
+    <script type="module" src="/src/tumble.js"></script>
+  </body>
+</html>
