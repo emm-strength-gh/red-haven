@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#f3e3c8" />
+    <meta name="description" content="Little Cup Café — a cozy 3D isometric café sim. Make drinks, decorate, hire staff and grow five cafés from a quiet corner shop to a busy city roastery." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Nunito:wght@500;700;800;900&display=swap" />
+    <link rel="stylesheet" href="/src/cafe.css" />
+    <title>Little Cup Café — Red Haven</title>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="bubbles" class="bubbles"></div>
+
+    <!-- ============ title: a café notebook ============ -->
+    <section id="title" class="title-screen">
+      <div class="notebook">
+        <div class="spiral" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="page">
+          <div class="ring-stain" aria-hidden="true"></div>
+          <p class="scribble">a cozy café sim</p>
+          <h1 class="logo"><span class="cup" aria-hidden="true"><i></i><i></i><i></i></span><span class="w1">Little</span> <span class="w2">Cup</span> <span class="w3">Café</span></h1>
+          <p class="hand intro">Pull the shots, set the prices, arrange the chairs, and turn five tiny cafés into local favourites.</p>
+          <ul class="toc">
+            <li><button id="tJourney"><span class="num">01</span><b>Start the Journey</b><small>5 cafés · 15 shifts · events &amp; troubles</small></button></li>
+            <li><button id="tSandbox"><span class="num">02</span><b>Sandbox Café</b><small>Decorate &amp; expand freely, no goals</small></button></li>
+            <li><button id="tHow"><span class="num">03</span><b>How to run a café</b><small>Recipes, staff, layout tips</small></button></li>
+            <li><button id="tSound"><span class="num">04</span><b>Sound: on</b><small>Soft lo-fi and café sounds</small></button></li>
+            <li><a href="index.html"><span class="num">←</span><b>Back to the arcade</b><small>Red Haven game hub</small></a></li>
+          </ul>
+          <p id="titleWallet" class="wallet-line"></p>
+        </div>
+        <div class="sticky" aria-hidden="true">Today’s<br>special:<br><b>you!</b></div>
+      </div>
+    </section>
+
+    <!-- ============ journey: postcards on a corkboard ============ -->
+    <section id="journey" class="journey hidden">
+      <header class="j-head">
+        <button id="journeyBack" class="tag-btn">← Notebook</button>
+        <div><h2 id="journeyTitle" class="hand">The Journey</h2><p id="journeySub"></p></div>
+        <span id="journeyWallet" class="wallet-pill"></span>
+      </header>
+      <div class="cork">
+        <svg class="string" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 Q 250 110 500 40 T 1000 50" fill="none" stroke="#7b4f31" stroke-width="3" stroke-dasharray="2 6" /></svg>
+        <div id="mapStops" class="stops"></div>
+      </div>
+      <aside id="itinerary" class="itinerary hidden"></aside>
+    </section>
+
+    <!-- ============ how to play: a recipe card ============ -->
+    <section id="howto" class="howto hidden">
+      <div class="recipe-card">
+        <button id="howBack" class="tag-btn">← Notebook</button>
+        <h2 class="hand">How to run a café</h2>
+        <div class="how-grid">
+          <div><h4>1 · Plan the day</h4><p>Before opening, use the clipboard: pick drinks and prices on the <b>Menu</b>, stock the <b>Pantry</b>, hire your <b>Team</b>, and <b>Decorate</b>. The forecast warns you about events and possible troubles.</p></div>
+          <div><h4>2 · Open the doors</h4><p>Flip the sign. Guests line up at the register — tap them (or press <b>Take order</b>) and their ticket clips onto the rail.</p></div>
+          <div><h4>3 · Make the drinks</h4><p>Tap a ticket, then tap the recipe steps at the bar. For ☕ shots and ♨️ milk, stop the needle in the green. Press <b>Serve</b>. Keys: 1–9 for steps, Space to serve.</p></div>
+          <div><h4>4 · Keep guests happy</h4><p>Short waits, correct orders, fair prices and cozy décor raise happiness and tips. Very happy guests may become regulars.</p></div>
+          <div><h4>5 · Layout matters</h4><p>A seat must be next to a table to count. Keep the line and door clear. Plants, lamps and shelves add comfort.</p></div>
+          <div><h4>6 · Grow</h4><p>Earn reputation to unlock décor, equipment and expansions: patios, lofts, takeaway windows. Finish a café’s shifts to travel to the next.</p></div>
+          <div><h4>Troubles</h4><p>Jammed machines, late deliveries, rushes, sick staff, spills and shortages come with choices. Pay to fix them, change the menu, move staff around, or take a small hit.</p></div>
+          <div><h4>Recipes</h4><p class="recipes-mini">☕ Coffee: drip · 🫘 Espresso: shot · 🥛 Latte: shot + steam · ☁️ Cappuccino: shot + steam + foam · 🍃 Tea: hot water + leaves · 🧋 Cold brew: brew + ice · 🍫 Mocha: shot + cocoa + steam · and more…</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ in-game HUD ============ -->
+    <header id="hud" class="hud hidden">
+      <div class="plank"><b id="hLoc">Corner Café</b><small id="hLevel"></small></div>
+      <div class="clock" id="hClockFill"><span class="dial" aria-hidden="true"></span><div><b id="hTime">7:00 AM</b><small id="hPhase"></small></div></div>
+      <div class="spacer"></div>
+      <div class="pill coins"><span>🪙</span><b id="hCoins">$0</b></div>
+      <div class="pill happy"><span id="hHappyFace">😊</span><div><small>Happiness <b id="hHappy">100%</b></small><i class="meter"><i id="hHappyBar"></i></i></div></div>
+      <div class="pill rep"><span>★</span><div><small>Rep <b id="hRep">1</b></small><i class="meter gold"><i id="hRepBar"></i></i></div></div>
+      <button id="stockBtn" class="round hidden" aria-label="Rush order supplies" title="Rush order supplies">📦</button>
+      <button id="hMenu" class="round" aria-label="Pause">⏸</button>
+    </header>
+
+    <div id="rail" class="rail hidden" aria-label="Order tickets"></div>
+    <aside id="goalCard" class="goal-card hidden"></aside>
+    <div id="banner" class="banner hidden" role="status"></div>
+
+    <!-- ============ planner clipboard (prep) ============ -->
+    <section id="planner" class="planner hidden" aria-label="Morning planner">
+      <div class="clip" aria-hidden="true"></div>
+      <nav id="plannerTabs" class="p-tabs"></nav>
+      <div id="plannerBody" class="p-body"></div>
+      <footer class="p-foot">
+        <button id="plannerHome" class="tag-btn">🗺️ Map</button>
+        <button id="openBtn" class="open-sign"><span class="cord" aria-hidden="true"></span><span class="board"><small>flip the sign</small><b>OPEN</b></span></button>
+      </footer>
+    </section>
+
+    <!-- ============ build tray ============ -->
+    <section id="buildTray" class="build-tray hidden">
+      <div id="trayInfo" class="tray-info"></div>
+      <div class="tray-row"><div id="trayCats" class="tray-cats"></div><button id="trayDone" class="done-btn">✔ Done</button></div>
+      <div id="trayItems" class="tray-items"></div>
+    </section>
+
+    <!-- ============ the bar (drink making) ============ -->
+    <section id="bar" class="bar hidden">
+      <div id="barRecipe" class="bar-recipe"></div>
+      <div id="barSteps" class="bar-steps"></div>
+      <div class="bar-cup"><div class="cup-label">In the cup</div><div id="barCup" class="cup-layers"></div>
+        <div class="cup-btns"><button id="barTrash">🗑️ Trash</button><button id="barClose">✕ Later</button></div></div>
+      <div id="gauge" class="gauge hidden">
+        <p id="gaugeLabel"></p>
+        <div class="gauge-track"><i id="gaugeZone" class="zone"></i><i id="gaugeNeedle" class="needle"></i></div>
+        <small>tap anywhere here · or press Space</small>
+      </div>
+      <div id="gaugeFlash" class="flash"></div>
+    </section>
+    <button id="serveBtn" class="serve-btn hidden"><span>🛎️</span><b>Serve</b></button>
+
+    <div id="trouble" class="modal hidden"></div>
+    <div id="pauseMenu" class="modal hidden"></div>
+    <div id="receipt" class="modal receipt hidden"></div>
+    <div id="toast" class="toast"></div>
+
+    <script type="module" src="/src/cafe.js"></script>
+  </body>
+</html>
