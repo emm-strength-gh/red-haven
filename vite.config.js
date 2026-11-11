@@ -24,7 +24,7 @@ export default defineConfig({
     manifest: {
       name: 'Red Haven',
       short_name: 'Red Haven',
-      description: 'Low-poly cartoon games: Mars colony survival, arcade adventures, colorful puzzles and a cozy café sim.',
+      description: 'Low-poly cartoon games: Mars colony survival, arcade adventures, colorful puzzles and a mall tycoon sim.',
       theme_color: '#111b20',
       background_color: '#111b20',
       display: 'standalone',
