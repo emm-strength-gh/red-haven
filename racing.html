@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#16093a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Toy Cars Racing — a 3D toy-car racer. Loops, jumps, shortcuts and traffic across six wild tracks. Race the AI or chase your best lap." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;800;900&display=swap" />
+    <link rel="stylesheet" href="/src/racing.css" />
+    <title>Toy Cars Racing — Red Haven</title>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="nitroFx" class="nitro-fx" aria-hidden="true"></div>
+
+    <!-- ================= HUD ================= -->
+    <div id="hud" class="hud hidden">
+      <div class="hud-top">
+        <div class="pill pos-pill" id="posPill"><b id="hudPos">1</b><small id="hudPosOf">/6</small></div>
+        <div class="pill lap-pill"><small>Lap</small><b id="hudLap">1/3</b></div>
+        <div class="pill time-pill">
+          <div><small>Time</small><b id="hudTime">0:00.00</b></div>
+          <div class="sub"><small>Lap</small><span id="hudLapTime">0:00.00</span></div>
+          <div class="sub"><small>Best</small><span id="hudBest">--:--.--</span></div>
+          <div class="sub delta" id="hudDelta"></div>
+        </div>
+        <div class="spacer"></div>
+        <canvas id="minimap" class="minimap" width="150" height="150"></canvas>
+        <div class="hud-btns">
+          <button id="camBtn" class="round" aria-label="Change camera">🎥</button>
+          <button id="pauseBtn" class="round" aria-label="Pause">⏸</button>
+        </div>
+      </div>
+      <div id="camName" class="cam-name"></div>
+      <div id="msg" class="msg"></div>
+      <div id="sub" class="sub-msg"></div>
+      <div id="wrongWay" class="wrong-way hidden">⟲ WRONG WAY</div>
+
+      <div class="speedo">
+        <div class="speed"><b id="hudSpeed">0</b><small>km/h</small></div>
+        <div class="nitro-bar"><i id="nitroFill"></i><span>NITRO</span></div>
+      </div>
+
+      <!-- touch controls -->
+      <div id="touch" class="touch">
+        <div class="left-cluster">
+          <button id="btnNitro" class="ctl nitro" aria-label="Nitro">🔥<span>NITRO</span></button>
+          <div id="steerPad" class="steer-pad" aria-label="Steer">
+            <div class="steer left" data-dir="-1">◀</div>
+            <div class="steer right" data-dir="1">▶</div>
+          </div>
+        </div>
+        <div class="right-cluster">
+          <button id="btnHand" class="ctl hand" aria-label="Handbrake / drift">⤳<span>DRIFT</span></button>
+          <button id="btnBrake" class="ctl brake" aria-label="Brake / reverse">▼<span>BRAKE</span></button>
+          <button id="btnGas" class="ctl gas" aria-label="Gas">▲<span>GAS</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TITLE ================= -->
+    <section id="title" class="screen">
+      <div class="title-wrap">
+        <a class="home" href="index.html">← Games</a>
+        <div class="logo" aria-label="Toy Cars Racing">
+          <span class="l1">TOY CARS</span>
+          <span class="l2">RACING</span>
+          <i class="flame" aria-hidden="true"></i>
+        </div>
+        <p class="tag">Loops · jumps · shortcuts · six wild tracks</p>
+        <nav class="main-menu">
+          <button id="mRace" class="mbtn race">🏁 <b>Race</b><small>vs 5 rivals</small></button>
+          <button id="mTrial" class="mbtn trial">⏱ <b>Time Trial</b><small>chase your best lap</small></button>
+          <button id="mGarage" class="mbtn garage">🚗 <b>Garage</b><small id="mCarName">Flame Fury</small></button>
+          <button id="mSettings" class="mbtn settings">⚙️ <b>Settings</b><small>sound · controls</small></button>
+        </nav>
+        <p class="keys">Keys: ↑↓←→ / WASD · Space drift · Shift nitro · C camera · R reset · Esc pause</p>
+      </div>
+    </section>
+
+    <!-- ================= TRACK SELECT ================= -->
+    <section id="tracks" class="screen hidden">
+      <div class="panel wide">
+        <div class="panel-head">
+          <button class="back" data-back>←</button>
+          <h2 id="tracksTitle">Pick a Track</h2>
+          <div id="diffSeg" class="seg" role="radiogroup" aria-label="Difficulty">
+            <button data-diff="easy">Easy</button><button data-diff="normal">Normal</button><button data-diff="hard">Hard</button>
+          </div>
+        </div>
+        <div id="trackGrid" class="track-grid"></div>
+      </div>
+    </section>
+
+    <!-- ================= GARAGE ================= -->
+    <section id="garage" class="screen garage-screen hidden">
+      <div class="garage-ui">
+        <div class="panel-head">
+          <button class="back" data-back>←</button>
+          <h2>Garage</h2>
+        </div>
+        <div class="car-pick">
+          <button id="carPrev" class="arrow" aria-label="Previous car">◀</button>
+          <div class="car-card">
+            <h3 id="carName">Flame Fury</h3>
+            <div id="carStats" class="stats"></div>
+            <div id="carPaint" class="paints" aria-label="Paint"></div>
+          </div>
+          <button id="carNext" class="arrow" aria-label="Next car">▶</button>
+        </div>
+        <button id="carSelect" class="btn primary">✔ Drive this car</button>
+      </div>
+    </section>
+
+    <!-- ================= SETTINGS ================= -->
+    <section id="settings" class="screen hidden">
+      <div class="panel">
+        <div class="panel-head"><button class="back" data-back>←</button><h2>Settings</h2></div>
+        <div class="setting"><span>Sound</span><button id="setSound" class="toggle">On</button></div>
+        <div class="setting"><span>Touch controls</span><button id="setTouch" class="toggle">Auto</button></div>
+        <div class="setting"><span>Auto-gas <small>(car accelerates by itself)</small></span><button id="setAutoGas" class="toggle">Off</button></div>
+        <div class="setting"><span>Start camera</span><button id="setCam" class="toggle">Chase</button></div>
+        <div class="setting"><span>Ghost car in Time Trial</span><button id="setGhost" class="toggle">On</button></div>
+        <div class="setting"><span>Graphics</span><button id="setQuality" class="toggle">High</button></div>
+        <button id="resetRecords" class="btn danger">Reset best times</button>
+      </div>
+    </section>
+
+    <!-- ================= PAUSE ================= -->
+    <section id="pause" class="screen dim hidden">
+      <div class="panel small">
+        <h2>Paused</h2>
+        <button id="pResume" class="btn primary">▶ Resume</button>
+        <button id="pRestart" class="btn">⟲ Restart</button>
+        <button id="pReset" class="btn">↺ Put car back on track</button>
+        <button id="pCam" class="btn">🎥 Camera: <span id="pCamName">Chase</span></button>
+        <button id="pSound" class="btn">🔊 Sound: <span id="pSoundName">On</span></button>
+        <button id="pQuit" class="btn">✖ Quit to menu</button>
+      </div>
+    </section>
+
+    <!-- ================= RESULTS ================= -->
+    <section id="results" class="screen dim hidden">
+      <div class="panel results">
+        <div id="resBadge" class="res-badge">🏆</div>
+        <h2 id="resTitle">1st Place!</h2>
+        <p id="resSub" class="res-sub"></p>
+        <table id="resTable" class="res-table"></table>
+        <div class="row">
+          <button id="rRetry" class="btn primary">⟲ Race again</button>
+          <button id="rNext" class="btn">Next track ▶</button>
+        </div>
+        <button id="rMenu" class="btn ghost">Menu</button>
+      </div>
+    </section>
+
+    <div id="rotate" class="rotate-hint hidden">↻ Turn your phone sideways for the best view</div>
+    <script type="module" src="/src/racing.js"></script>
+  </body>
+</html>
