@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#1b1235" />
-    <meta name="description" content="Red Haven — colorful low-poly games on Mars, from colony survival to puzzles and arcade adventures." />
+    <meta name="description" content="Red Haven — colorful low-poly games: Mars colony survival, arcade classics, puzzles, learning games, a mall tycoon and a pose studio." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -16,58 +16,98 @@
     <div class="stars" aria-hidden="true"></div>
     <div class="planet" aria-hidden="true"><i></i><i></i><i></i></div>
 
-    <main class="hero">
-      <p class="kicker">Low-poly cartoon games</p>
-      <h1><span>Red</span> <span>Haven</span></h1>
-      <p class="tagline">Build a home on a habitable Mars, chase arcade thrills, or explore colorful puzzles under the Martian sky.</p>
+    <header class="top">
+      <a class="brand" href="./" aria-label="Red Haven home"><span class="brand-planet" aria-hidden="true"></span><span><b>Red</b> Haven</span></a>
+      <span class="count" id="count">10 games</span>
+    </header>
 
-      <nav class="buttons" aria-label="Choose a game">
-        <a class="big-btn launch" href="redhaven.html">
-          <span class="emoji" aria-hidden="true">🚀</span>
-          <span class="txt"><b>Launch Red Haven</b><small>Mars colony survival</small></span>
-        </a>
-        <a class="big-btn snakes" href="snakes.html">
-          <span class="emoji" aria-hidden="true">🐍</span>
-          <span class="txt"><b>Snakes</b><small>3D arcade · 3 worlds · 7 powers</small></span>
-        </a>
-        <a class="big-btn tetris" href="tetris.html">
-          <span class="emoji" aria-hidden="true">🧱</span>
-          <span class="txt"><b>Tetris</b><small>Blocks fall from the Martian sky</small></span>
-        </a>
-        <a class="big-btn arrange" href="arrange.html">
-          <span class="emoji" aria-hidden="true">🔢</span>
-          <span class="txt"><b>Arrange Numbers</b><small>Tap in order · build the number wall</small></span>
-        </a>
-        <a class="big-btn spell" href="spell.html">
-          <span class="emoji" aria-hidden="true">🔤</span>
-          <span class="txt"><b>Spell It!</b><small>Tap the letters · spell the picture</small></span>
-        </a>
-        <a class="big-btn pour" href="pour.html">
-          <span class="emoji" aria-hidden="true">🧪</span>
-          <span class="txt"><b>Color Pour</b><small>Sort the colors · follow the puzzle trail</small></span>
-        </a>
-        <a class="big-btn frost" href="frost.html">
-          <span class="emoji" aria-hidden="true">❄️</span>
-          <span class="txt"><b>Frostfall</b><small>Build · survive the polar night · defend</small></span>
-        </a>
-        <a class="big-btn mechanics" href="mechanics.html">
-          <span class="emoji" aria-hidden="true">🦴</span>
-          <span class="txt"><b>Body Mechanics</b><small>Pose · proportion · animate</small></span>
-        </a>
-        <a class="big-btn tumble" href="tumble.html">
-          <span class="emoji" aria-hidden="true">🕯️</span>
-          <span class="txt"><b>Tumble Temple</b><small>Roll the block · 66 gothic puzzles</small></span>
-        </a>
-        <a class="big-btn cafe" href="cafe.html">
-          <span class="emoji" aria-hidden="true">🏬</span>
-          <span class="txt"><b>Little Cup Plaza</b><small>Mall tycoon · build · research · grow</small></span>
-        </a>
-      </nav>
+    <main class="wrap">
+      <!-- featured -->
+      <section class="feature" aria-label="Featured game">
+        <div class="feature-art" aria-hidden="true">
+          <div class="mars"><i></i><i></i><i></i></div>
+          <div class="dome d1"></div><div class="dome d2"></div><div class="dome d3"></div>
+          <div class="rocket">🚀</div>
+        </div>
+        <div class="feature-copy">
+          <p class="kicker">Featured · Colony survival</p>
+          <h1>Red Haven</h1>
+          <p>Build a home on a habitable Mars. Gather, construct, keep your colonists alive and fend off raids in Expedition or Endless mode.</p>
+          <div class="feature-actions">
+            <a class="play" href="redhaven.html" data-game="redhaven">Launch colony <span aria-hidden="true">→</span></a>
+            <span class="chip-tag">3D</span><span class="chip-tag">Saves</span><span class="chip-tag">Endless</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- continue -->
+      <section class="recent" id="recent" hidden aria-label="Jump back in">
+        <h2>Jump back in</h2>
+        <div class="recent-row" id="recentRow"></div>
+      </section>
+
+      <!-- library -->
+      <section class="library" aria-label="All games">
+        <div class="lib-head">
+          <h2>Game library</h2>
+          <div class="filters" role="tablist" aria-label="Filter games">
+            <button class="filter on" data-filter="all" role="tab" aria-selected="true">All</button>
+            <button class="filter" data-filter="arcade" role="tab" aria-selected="false">🕹️ Arcade</button>
+            <button class="filter" data-filter="puzzle" role="tab" aria-selected="false">🧩 Puzzle</button>
+            <button class="filter" data-filter="sim" role="tab" aria-selected="false">🏗️ Build &amp; sim</button>
+            <button class="filter" data-filter="learn" role="tab" aria-selected="false">✏️ Learning</button>
+            <button class="filter" data-filter="create" role="tab" aria-selected="false">🎨 Creative</button>
+          </div>
+        </div>
+
+        <div class="grid" id="grid">
+          <a class="card" href="redhaven.html" data-game="redhaven" data-tags="sim" style="--c1:#ff9a5a;--c2:#d9473a">
+            <span class="cover"><span class="em">🚀</span></span>
+            <span class="body"><b>Red Haven</b><small>Mars colony survival</small><span class="tags"><i>Build &amp; sim</i><i>3D</i></span></span>
+          </a>
+          <a class="card" href="cafe.html" data-game="cafe" data-tags="sim" style="--c1:#ffe2b8;--c2:#e9a46b">
+            <span class="ribbon">New</span>
+            <span class="cover"><span class="em">🏬</span></span>
+            <span class="body"><b>Little Cup Plaza</b><small>Grow a café into a whole mall</small><span class="tags"><i>Tycoon</i><i>Research</i></span></span>
+          </a>
+          <a class="card" href="frost.html" data-game="frost" data-tags="sim" style="--c1:#d6f2ff;--c2:#7cc6ec">
+            <span class="cover"><span class="em">❄️</span></span>
+            <span class="body"><b>Frostfall</b><small>Survive the polar night</small><span class="tags"><i>Survival</i><i>Defend</i></span></span>
+          </a>
+          <a class="card" href="snakes.html" data-game="snakes" data-tags="arcade" style="--c1:#b6f07a;--c2:#5fbf38">
+            <span class="cover"><span class="em">🐍</span></span>
+            <span class="body"><b>Snakes</b><small>3 worlds · 7 power-ups</small><span class="tags"><i>Arcade</i><i>3D</i></span></span>
+          </a>
+          <a class="card" href="tetris.html" data-game="tetris" data-tags="arcade puzzle" style="--c1:#9fe6fb;--c2:#3aa9d8">
+            <span class="cover"><span class="em">🧱</span></span>
+            <span class="body"><b>Tetris</b><small>Blocks fall from the Martian sky</small><span class="tags"><i>Arcade</i><i>Puzzle</i></span></span>
+          </a>
+          <a class="card" href="tumble.html" data-game="tumble" data-tags="puzzle" style="--c1:#d7bcff;--c2:#7d58c9">
+            <span class="cover"><span class="em">🕯️</span></span>
+            <span class="body"><b>Tumble Temple</b><small>Roll the block · 66 gothic puzzles</small><span class="tags"><i>Puzzle</i><i>Levels</i></span></span>
+          </a>
+          <a class="card" href="pour.html" data-game="pour" data-tags="puzzle" style="--c1:#d4bbff;--c2:#9a6ef0">
+            <span class="cover"><span class="em">🧪</span></span>
+            <span class="body"><b>Color Pour</b><small>Sort the colors along a puzzle trail</small><span class="tags"><i>Puzzle</i><i>Relaxing</i></span></span>
+          </a>
+          <a class="card" href="arrange.html" data-game="arrange" data-tags="learn puzzle" style="--c1:#ffe680;--c2:#f2b52a">
+            <span class="cover"><span class="em">🔢</span></span>
+            <span class="body"><b>Arrange Numbers</b><small>Tap in order · build the number wall</small><span class="tags"><i>Learning</i><i>Kids</i></span></span>
+          </a>
+          <a class="card" href="spell.html" data-game="spell" data-tags="learn" style="--c1:#ffc2e2;--c2:#f07ab4">
+            <span class="cover"><span class="em">🔤</span></span>
+            <span class="body"><b>Spell It!</b><small>Tap the letters · spell the picture</small><span class="tags"><i>Learning</i><i>Kids</i></span></span>
+          </a>
+          <a class="card" href="mechanics.html" data-game="mechanics" data-tags="create" style="--c1:#ff8fbf;--c2:#e2367f">
+            <span class="cover"><span class="em">🦴</span></span>
+            <span class="body"><b>Body Mechanics</b><small>Pose · proportion · animate</small><span class="tags"><i>Creative</i><i>Studio</i></span></span>
+          </a>
+        </div>
+        <p class="empty" id="empty" hidden>No games in this shelf yet.</p>
+      </section>
     </main>
 
-    <div class="crawler" aria-hidden="true">
-      <span></span><span></span><span></span><span></span><span></span><span></span><span class="head"></span>
-    </div>
-    <footer>Works on desktop and mobile · installable for offline play</footer>
+    <footer>Works on desktop and mobile · install it for offline play</footer>
+    <script type="module" src="/src/landing.js"></script>
   </body>
 </html>
