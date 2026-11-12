@@ -42,7 +42,7 @@ hemi.specular = new Color3(0.2, 0.2, 0.25);
 const sun = new DirectionalLight('sun', new Vector3(0.45, -0.55, 0.7), scene);
 sun.intensity = 1.05;
 sun.diffuse = new Color3(1, 0.95, 0.9);
-const glow = new GlowLayer('glow', scene, { mainTextureRatio: 0.5, blurKernelSize: 40 });
+const glow = new GlowLayer('glow', scene, { mainTextureRatio: 0.5, blurKernelSize: 40, ldrMerge: true });
 glow.intensity = 0.85;
 
 // ------------------------------------------------------------------ materials & textures
@@ -552,6 +552,9 @@ function starLayer(n, size, seed) {
   return [m, m.clone('stars' + seed + 'b')];
 }
 const starTiles = [...starLayer(700, 2.2, 1), ...starLayer(260, 3.6, 2)];
+// The glow pass draws points without setting gl_PointSize; phone GPUs (notably Apple) then
+// draw each star as a huge square and the whole screen washes out white. Keep stars out of it.
+starTiles.forEach((m) => glow.addExcludedMesh(m));
 
 // distant scenery, placed once along the whole climb (far z = natural parallax)
 const decor = [];
