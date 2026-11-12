@@ -57,7 +57,7 @@ function applyQuality() {
 }
 applyQuality();
 
-const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 2400);
+const camera = new THREE.PerspectiveCamera(62, 1, 0.3, 2400); // near 0.3 (not 0.1): ~3x more depth precision for the stacked road layers
 let scene = new THREE.Scene();
 
 function resize() {
@@ -409,7 +409,7 @@ function buildPathMeshes(group, T, pi, th) {
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   g.setIndex(idx); g.computeVertexNormals();
-  const roadMat = new THREE.MeshStandardMaterial({ map: tex, roughness: th.road === 'plastic' ? 0.42 : p.surface === 'ice' ? 0.15 : 0.85, metalness: th.road === 'plastic' ? 0.05 : 0, polygonOffset: true, polygonOffsetFactor: isMain ? -1 : -2, polygonOffsetUnits: isMain ? -1 : -2 });
+  const roadMat = new THREE.MeshStandardMaterial({ map: tex, roughness: th.road === 'plastic' ? 0.42 : p.surface === 'ice' ? 0.15 : 0.85, metalness: th.road === 'plastic' ? 0.05 : 0, polygonOffset: true, polygonOffsetFactor: isMain ? -2 : -3, polygonOffsetUnits: isMain ? -4 : -6 });
   const road = new THREE.Mesh(g, roadMat);
   road.receiveShadow = true;
   group.add(road);
@@ -513,6 +513,13 @@ function buildPathMeshes(group, T, pi, th) {
   }
 }
 
+// Flat layers stacked on the road (road < pad base < ice/start line < chevrons) are only
+// centimetres apart; phones with 16-bit depth can't separate them at overhead-camera
+// distances, so each layer also gets a polygon offset that always wins the depth test.
+function decal(m, layer) {
+  m.polygonOffset = true; m.polygonOffsetFactor = -2 - layer * 2; m.polygonOffsetUnits = -4 - layer * 4; // road = layer 0
+  return m;
+}
 function buildFeatures(group, T, th) {
   const M = T.main;
   boostMats = [];
@@ -521,18 +528,19 @@ function buildFeatures(group, T, th) {
     if (f.type === 'boost') {
       const tex = chevronTex('#ffffff').clone(); tex.needsUpdate = true; tex.repeat.set(1, f.len / 8);
       const m = new THREE.MeshBasicMaterial({ map: tex, color: th.night ? '#2de2ff' : '#00c8ff', transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
+      decal(m, 3);
       boostMats.push(tex);
       const g = stripGeometry(T, M, f.s, f.s + f.len, () => f.d || 0, () => f.w || M.w[0] - 2, (s, p) => p.y + 0.06, 1);
       group.add(new THREE.Mesh(g, m));
-      const base = new THREE.Mesh(stripGeometry(T, M, f.s - 0.5, f.s + f.len + 0.5, () => f.d || 0, () => (f.w || M.w[0] - 2) + 1, (s, p) => p.y + 0.045, 1), mat('#13204a', { rough: 0.4 }));
+      const base = new THREE.Mesh(stripGeometry(T, M, f.s - 0.5, f.s + f.len + 0.5, () => f.d || 0, () => (f.w || M.w[0] - 2) + 1, (s, p) => p.y + 0.045, 1), decal(mat('#13204a', { rough: 0.4 }).clone(), 1));
       group.add(base);
     } else if (f.type === 'ice') {
-      const m = new THREE.MeshStandardMaterial({ color: '#cdeeff', roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.75 });
+      const m = decal(new THREE.MeshStandardMaterial({ color: '#cdeeff', roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.75, depthWrite: false }), 2);
       group.add(new THREE.Mesh(stripGeometry(T, M, f.s, f.s + f.len, () => 0, () => M.w[0] - 0.5, (s, p) => p.y + 0.05, 1), m));
     } else if (f.type === 'kicker' || f.type === 'hump') {
       const w = f.w || M.w[0] - 0.6, d = f.d || 0;
       const top = stripGeometry(T, M, f.s, f.s + f.len, () => d, () => w, (s, p) => p.y + rampHeight(T, s, d) + 0.04, 0.5);
-      const tm = f.type === 'kicker' ? new THREE.MeshStandardMaterial({ map: stripeTex, roughness: 0.5 }) : new THREE.MeshStandardMaterial({ map: roadTexture(th.road, th.roadCol || '#ff7a1a'), roughness: 0.6 });
+      const tm = decal(f.type === 'kicker' ? new THREE.MeshStandardMaterial({ map: stripeTex, roughness: 0.5 }) : new THREE.MeshStandardMaterial({ map: roadTexture(th.road, th.roadCol || '#ff7a1a'), roughness: 0.6 }), 1);
       const mesh = new THREE.Mesh(top, tm); mesh.castShadow = true; mesh.receiveShadow = true; group.add(mesh);
       if (f.type === 'kicker') {
         // sides + back face
@@ -582,6 +590,7 @@ function buildFeatures(group, T, th) {
   // start line + gantry
   const p = pathPoint(M, 0);
   const line = new THREE.Mesh(stripGeometry(T, M, -1.2, 1.2, () => 0, () => M.w[0], (s, q) => q.y + 0.05, 2.4), new THREE.MeshBasicMaterial({ map: (() => { const t = checkerTex.clone(); t.needsUpdate = true; t.repeat.set(M.w[0] / 4, 1); t.rotation = Math.PI / 2; return t; })() }));
+  decal(line.material, 2);
   group.add(line);
   const hw = M.w[0] / 2 + 1.4;
   const gantry = new THREE.Group();
@@ -778,8 +787,8 @@ function buildLandmarks(group, T) {
       g.add(part(GEO.box, mat('#ffd77a', { emissive: '#ffb000', ei: 0.6 }), [0, 3, 4.55], [2, 2, 0.1]));
       g.add(part(GEO.box, mat('#555'), [3.5, 9, 0], [1.2, 4, 1.2]));
     } else if (k === 'lake') {
-      const lake = new THREE.Mesh(new THREE.CircleGeometry(1, 40), new THREE.MeshStandardMaterial({ color: '#a8dcff', roughness: 0.05, metalness: 0.3 }));
-      lake.rotation.x = -Math.PI / 2; lake.scale.set(22, 60, 1); lake.position.y = 0.04; g.add(lake);
+      const lake = new THREE.Mesh(new THREE.CircleGeometry(1, 40), new THREE.MeshStandardMaterial({ color: '#a8dcff', roughness: 0.05, metalness: 0.3, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }));
+      lake.rotation.x = -Math.PI / 2; lake.scale.set(22, 60, 1); lake.position.y = 0.008; // under the ice road that crosses it g.add(lake);
     } else if (k === 'stands') {
       for (let i = 0; i < 5; i++) g.add(part(GEO.box, mat(i % 2 ? '#2d1d78' : '#3b2a8c'), [0, 1.5 + i * 3, -i * 4], [160, 3, 4]));
       const crowd = new THREE.InstancedMesh(GEO.box, mat('#ffffff'), 300);
@@ -866,13 +875,16 @@ function buildTrackScene(T) {
   const gt = groundTexture(th.ground).clone(); gt.needsUpdate = true; gt.repeat.set(th.groundRep * 2, th.groundRep * 2);
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.MeshStandardMaterial({ map: gt, roughness: th.ground === 'snow' ? 0.9 : 0.85 }));
   ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+  ground.position.y = -0.05; // keep clear of the road (y≈0.02) so low-precision depth buffers never let it poke through
   scene.add(ground);
   if (th.ground === 'wood') {
     // a big rug under the track and room walls
-    const rug = new THREE.Mesh(new THREE.CircleGeometry(1, 48), mat('#5b7cff', { rough: 1 }));
-    rug.rotation.x = -Math.PI / 2; rug.position.set(0, 0.03, -90); rug.scale.set(250, 170, 1); rug.receiveShadow = true; scene.add(rug);
-    const rug2 = new THREE.Mesh(new THREE.RingGeometry(0.9, 0.96, 48), mat('#ffd000', { rough: 1 }));
-    rug2.rotation.x = -Math.PI / 2; rug2.position.set(0, 0.04, -90); rug2.scale.set(250, 170, 1); scene.add(rug2);
+    const rugM = mat('#5b7cff', { rough: 1 }).clone(); rugM.polygonOffset = true; rugM.polygonOffsetFactor = -1; rugM.polygonOffsetUnits = -1;
+    const rug = new THREE.Mesh(new THREE.CircleGeometry(1, 48), rugM);
+    rug.rotation.x = -Math.PI / 2; rug.position.set(0, 0.006, -90); rug.scale.set(250, 170, 1); rug.receiveShadow = true; scene.add(rug);
+    const rug2M = mat('#ffd000', { rough: 1 }).clone(); rug2M.polygonOffset = true; rug2M.polygonOffsetFactor = -1.5; rug2M.polygonOffsetUnits = -2;
+    const rug2 = new THREE.Mesh(new THREE.RingGeometry(0.9, 0.96, 48), rug2M);
+    rug2.rotation.x = -Math.PI / 2; rug2.position.set(0, 0.01, -90); rug2.scale.set(250, 170, 1); scene.add(rug2);
     const wallM = mat('#9fd3ff', { rough: 1 });
     for (const [x, z, ry] of [[0, -420, 0], [420, -90, -Math.PI / 2], [-420, -90, Math.PI / 2], [0, 260, Math.PI]]) {
       const w = part(GEO.box, wallM, [x, 90, z], [900, 180, 4]); w.rotation.y = ry; scene.add(w);
@@ -1217,15 +1229,21 @@ function pause() {
   show('pause');
 }
 function resume() { if (state !== 'paused') return; state = 'race'; show('none'); last = performance.now(); }
-$('pauseBtn').onclick = () => { audio.click(); pause(); };
+// HUD buttons fire on touch-down: mobile browsers drop 'click' while another finger
+// is holding gas/steer, which made the camera and pause buttons miss mid-race.
+function hudTap(el, fn) {
+  el.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); fn(); });
+  el.addEventListener('click', (e) => { if (e.detail === 0) fn(); }); // keyboard activation
+}
+hudTap($('pauseBtn'), () => { if (state !== 'race') return; audio.click(); pause(); });
 $('pResume').onclick = () => { audio.click(); resume(); };
 $('pRestart').onclick = () => { audio.click(); startRace(trackIndex); };
 $('pReset').onclick = () => { audio.click(); if (world && !player.loop) respawn(world, player, 'reset'); resume(); };
 $('pCam').onclick = () => { cycleCam(); $('pCamName').textContent = CAM_LABEL[camMode]; };
 $('pSound').onclick = () => { save.settings.sound = !save.settings.sound; audio.setEnabled(save.settings.sound); persist(); $('pSoundName').textContent = save.settings.sound ? 'On' : 'Off'; };
 $('pQuit').onclick = () => { audio.click(); quitToMenu(); };
-$('camBtn').onclick = () => { audio.click(); cycleCam(); };
-function cycleCam() { camMode = CAMS[(CAMS.indexOf(camMode) + 1) % CAMS.length]; camState.init = false; showCamName(); }
+hudTap($('camBtn'), () => { audio.click(); cycleCam(); });
+function cycleCam() { camMode = CAMS[(CAMS.indexOf(camMode) + 1) % CAMS.length]; camState.init = false; save.settings.cam = camMode; persist(); showCamName(); }
 let camNameT = 0;
 function showCamName() { $('camName').textContent = '🎥 ' + CAM_LABEL[camMode]; $('camName').classList.add('on'); camNameT = 1.4; }
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
@@ -1568,7 +1586,7 @@ window.addEventListener('pointerdown', () => audio.unlock(), { once: true });
 if (import.meta.env && import.meta.env.DEV) {
   window.__tcr = {
     tick(n = 1, ms = 16.7) { for (let i = 0; i < n; i++) { last -= ms; frame(performance.now()); } },
-    get world() { return world; }, get player() { return player; },
+    get world() { return world; }, get player() { return player; }, camera, scene,
     setCam(m) { camMode = m; camState.init = false; },
     autopilot() { player.ai = makeAI(mulberry32(1), 'hard', 0); }
   };
