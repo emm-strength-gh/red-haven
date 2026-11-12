@@ -337,10 +337,10 @@ export const TRACKS = [
 ];
 
 export const CARS = [
-  { id: 'flame', name: 'Flame Fury', style: 'racer', color: '#ff3b2f', accent: '#ffd400', top: 60, accel: 30, grip: 9.5, turn: 2.35, offroad: 0.55, nitroPower: 1 },
-  { id: 'muscle', name: 'Big Mike', style: 'muscle', color: '#2f6bff', accent: '#ffffff', top: 64, accel: 27, grip: 8, turn: 2.1, offroad: 0.55, nitroPower: 1.1 },
-  { id: 'buggy', name: 'Dune Bug', style: 'buggy', color: '#4fd34a', accent: '#ff8a00', top: 56, accel: 33, grip: 10.5, turn: 2.6, offroad: 0.82, nitroPower: 0.95 },
-  { id: 'rocket', name: 'Rocket Wedge', style: 'rocket', color: '#b04dff', accent: '#00e5ff', top: 68, accel: 25, grip: 7.5, turn: 1.95, offroad: 0.5, nitroPower: 1.3 }
+  { id: 'flame', name: 'Flame Fury', style: 'racer', color: '#ff3b2f', accent: '#ffd400', top: 51, accel: 26, grip: 9.5, turn: 2.35, offroad: 0.55, nitroPower: 1 },
+  { id: 'muscle', name: 'Big Mike', style: 'muscle', color: '#2f6bff', accent: '#ffffff', top: 54, accel: 23, grip: 8, turn: 2.1, offroad: 0.55, nitroPower: 1.1 },
+  { id: 'buggy', name: 'Dune Bug', style: 'buggy', color: '#4fd34a', accent: '#ff8a00', top: 48, accel: 28, grip: 10.5, turn: 2.6, offroad: 0.82, nitroPower: 0.95 },
+  { id: 'rocket', name: 'Rocket Wedge', style: 'rocket', color: '#b04dff', accent: '#00e5ff', top: 58, accel: 21, grip: 7.5, turn: 1.95, offroad: 0.5, nitroPower: 1.3 }
 ];
 
 export const AI_NAMES = ['Zoomer', 'Turbo Tess', 'Skid Kid', 'Max Wheels', 'Dash', 'Nitro Nell', 'Gears', 'Blaze'];

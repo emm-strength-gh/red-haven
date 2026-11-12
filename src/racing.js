@@ -19,10 +19,19 @@ const PAINTS = ['#ff3b2f', '#ff8a00', '#ffd400', '#4fd34a', '#16d1c2', '#2f6bff'
 // ------------------------------------------------------------------ save
 const save = loadSave();
 function loadSave() {
-  const base = { car: 0, paint: {}, records: {}, settings: { sound: true, touch: 'auto', autoGas: false, cam: 'chase', ghost: true, quality: 'high' }, diff: 'normal' };
+  const base = { paceVersion: 2, car: 0, paint: {}, records: {}, settings: { sound: true, touch: 'auto', autoGas: false, cam: 'chase', ghost: true, quality: 'high' }, diff: 'normal' };
   try {
     const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
-    if (s) return { ...base, ...s, settings: { ...base.settings, ...(s.settings || {}) } };
+    if (s) {
+      if (s.paceVersion !== base.paceVersion) {
+        for (const r of Object.values(s.records || {})) {
+          if (r && typeof r === 'object') { r.bestLap = null; r.bestTotal = null; r.ghost = null; }
+        }
+        s.paceVersion = base.paceVersion;
+        try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); } catch { /* storage unavailable */ }
+      }
+      return { ...base, ...s, settings: { ...base.settings, ...(s.settings || {}) } };
+    }
   } catch { /* ignore */ }
   return base;
 }
@@ -1010,7 +1019,7 @@ function renderGarage() {
   const c = CARS[garageIndex];
   $('carName').textContent = c.name + (garageIndex === save.car ? ' ✔' : '');
   const stat = (label, v) => `<span>${label}</span><i><b style="width:${Math.round(clamp(v, 0.05, 1) * 100)}%"></b></i>`;
-  $('carStats').innerHTML = stat('SPEED', (c.top - 50) / 20) + stat('ACCEL', (c.accel - 20) / 15) + stat('GRIP', (c.grip - 6) / 5) + stat('TURN', (c.turn - 1.7) / 1.0) + stat('OFF-ROAD', (c.offroad - 0.4) / 0.45) + stat('NITRO', (c.nitroPower - 0.8) / 0.55);
+  $('carStats').innerHTML = stat('SPEED', (c.top - 42) / 18) + stat('ACCEL', (c.accel - 18) / 12) + stat('GRIP', (c.grip - 6) / 5) + stat('TURN', (c.turn - 1.7) / 1.0) + stat('OFF-ROAD', (c.offroad - 0.4) / 0.45) + stat('NITRO', (c.nitroPower - 0.8) / 0.55);
   const pc = $('carPaint'); pc.innerHTML = '';
   const cur = carPaint(garageIndex);
   PAINTS.forEach((p) => {
