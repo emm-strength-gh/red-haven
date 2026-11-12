@@ -1069,6 +1069,7 @@ let player = null, ghostRec = [], ghostPlay = null, ghostT = 0, lastGhostSample 
 let lastPlace = 0, lastLapShown = 0, bestLapThisRace = null, newPB = false, raceSeed = 1;
 
 function startRace(i) {
+  resetInput();
   trackIndex = i;
   track = getTrack(i);
   const spec = { ...CARS[save.car] };
@@ -1219,16 +1220,17 @@ function showResults() {
 $('rRetry').onclick = () => { audio.click(); startRace(trackIndex); };
 $('rNext').onclick = () => { audio.click(); startRace((trackIndex + 1) % TRACKS.length); };
 $('rMenu').onclick = () => { audio.click(); quitToMenu(); };
-function quitToMenu() { state = 'menu'; $('hud').classList.add('hidden'); world = null; show('title'); resize(); }
+function quitToMenu() { resetInput(); state = 'menu'; $('hud').classList.add('hidden'); world = null; show('title'); resize(); }
 
 function pause() {
   if (state !== 'race') return;
+  resetInput();
   state = 'paused';
   $('pCamName').textContent = CAM_LABEL[camMode];
   $('pSoundName').textContent = save.settings.sound ? 'On' : 'Off';
   show('pause');
 }
-function resume() { if (state !== 'paused') return; state = 'race'; show('none'); last = performance.now(); }
+function resume() { if (state !== 'paused') return; resetInput(); state = 'race'; show('none'); last = performance.now(); }
 // HUD buttons fire on touch-down: mobile browsers drop 'click' while another finger
 // is holding gas/steer, which made the camera and pause buttons miss mid-race.
 function hudTap(el, fn) {
@@ -1263,7 +1265,21 @@ window.addEventListener('keydown', (e) => {
   audio.unlock();
 });
 window.addEventListener('keyup', (e) => keys.delete(e.code));
-window.addEventListener('blur', () => { keys.clear(); for (const k in touch) touch[k] = false; });
+// Every pointer-tracking control registers its clear() here. iOS can drop pointerup/cancel when a
+// touch is interrupted (notification, swipe, app switch), leaving a finger "held" forever — which
+// pinned the steering hard left for whole races and survived restarts. resetInput() wipes it all.
+const inputResets = [];
+function resetInput() {
+  keys.clear();
+  for (const k in touch) touch[k] = false;
+  for (const f of inputResets) f();
+}
+window.addEventListener('blur', resetInput);
+document.addEventListener('visibilitychange', () => { if (document.hidden) resetInput(); });
+// No fingers on the screen means nothing can be held, whatever events went missing.
+const allUp = (e) => { if (e.touches.length === 0) for (const f of inputResets) f(); };
+document.addEventListener('touchend', allUp, { passive: true });
+document.addEventListener('touchcancel', allUp, { passive: true });
 
 function bindHold(el, key) {
   const ids = new Set();
@@ -1272,6 +1288,7 @@ function bindHold(el, key) {
   const up = (e) => { ids.delete(e.pointerId); set(); };
   el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('lostpointercapture', up);
   el.addEventListener('contextmenu', (e) => e.preventDefault());
+  inputResets.push(() => { ids.clear(); set(); });
 }
 bindHold($('btnGas'), 'gas'); bindHold($('btnBrake'), 'brake'); bindHold($('btnHand'), 'hand'); bindHold($('btnNitro'), 'nitro');
 {
@@ -1290,6 +1307,7 @@ bindHold($('btnGas'), 'gas'); bindHold($('btnBrake'), 'brake'); bindHold($('btnH
   const up = (e) => { ptrs.delete(e.pointerId); update(); };
   pad.addEventListener('pointerup', up); pad.addEventListener('pointercancel', up); pad.addEventListener('lostpointercapture', up);
   pad.addEventListener('contextmenu', (e) => e.preventDefault());
+  inputResets.push(() => { ptrs.clear(); update(); });
 }
 document.addEventListener('touchmove', (e) => { if (state === 'race') e.preventDefault(); }, { passive: false });
 document.addEventListener('gesturestart', (e) => e.preventDefault());
