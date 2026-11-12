@@ -5,7 +5,7 @@ export default defineConfig({
   base: './',
   build: {
     rollupOptions: {
-      input: { main: 'index.html', redhaven: 'redhaven.html', snakes: 'snakes.html', tetris: 'tetris.html', arrange: 'arrange.html', spell: 'spell.html', pour: 'pour.html', frost: 'frost.html', mechanics: 'mechanics.html', tumble: 'tumble.html', cafe: 'cafe.html', racing: 'racing.html' }
+      input: { main: 'index.html', redhaven: 'redhaven.html', snakes: 'snakes.html', tetris: 'tetris.html', arrange: 'arrange.html', spell: 'spell.html', pour: 'pour.html', frost: 'frost.html', mechanics: 'mechanics.html', tumble: 'tumble.html', cafe: 'cafe.html', racing: 'racing.html', rocket: 'rocket.html' }
     }
   },
   plugins: [VitePWA({
@@ -14,6 +14,8 @@ export default defineConfig({
     workbox: {
       // several HTML entry points: don't rewrite every navigation to the landing page
       navigateFallback: null,
+      // the Babylon.js bundle is larger than workbox's 2 MB default
+      maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
       // keep the cartoon fonts available offline after the first visit
       runtimeCaching: [{
         urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/,

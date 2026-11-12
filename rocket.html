@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#1b0f45" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Rocket to the Rim — launch from Earth and survive the climb through debris, asteroids, alien craft and black holes to the edge of the universe." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lilita+One&display=swap" />
+    <link rel="stylesheet" href="/src/rocket.css" />
+    <title>Rocket to the Rim — Red Haven</title>
+  </head>
+  <body>
+    <canvas id="stage" aria-label="Rocket to the Rim game view"></canvas>
+    <div id="flash" class="flash" aria-hidden="true"></div>
+    <div id="vignette" class="danger-vignette" aria-hidden="true"></div>
+
+    <!-- ================= HUD ================= -->
+    <div id="hud" class="hud hidden">
+      <div class="bars">
+        <div class="bar bar-hull" id="barHull"><span class="badge">🛡️</span><div class="segs"></div></div>
+        <div class="bar bar-energy" id="barEnergy"><span class="badge">🔋</span><div class="segs"></div></div>
+        <div class="bar bar-heat" id="barHeat"><span class="badge">🔥</span><div class="segs"></div></div>
+      </div>
+      <div class="top-right">
+        <div class="bar bar-speed" id="barSpeed"><span class="badge">🚀</span><div class="segs"></div><b id="speedText">0</b></div>
+        <button id="pauseBtn" class="round-btn" aria-label="Pause">⏸</button>
+      </div>
+      <div class="route" aria-label="Route progress">
+        <div class="route-line"><i id="routeFill"></i></div>
+        <div id="routeStops" class="route-stops"></div>
+        <div id="routeRocket" class="route-rocket">🚀</div>
+      </div>
+      <div id="status" class="status"></div>
+      <div id="banner" class="banner"></div>
+      <div id="countdown" class="countdown"></div>
+      <div id="scanMeter" class="scan-meter hidden"><span>SCAN</span><i id="scanFill"></i></div>
+      <button id="boostBtn" class="boost-btn" aria-label="Boost"><span class="boost-ico">⚡</span><span>BOOST</span></button>
+      <div id="steerHint" class="steer-hint">◀ drag to steer ▶</div>
+    </div>
+
+    <!-- ================= TITLE ================= -->
+    <div id="title" class="screen">
+      <div class="card title-card">
+        <a class="home" href="index.html">← Games</a>
+        <div class="title-rocket">🚀</div>
+        <h1>Rocket<br /><span>to the Rim</span></h1>
+        <p class="tag">Launch from Earth. Survive the climb. Reach the edge of the universe.</p>
+        <div class="legend">
+          <span class="lg cyan">Cyan = speed &amp; energy</span>
+          <span class="lg magenta">Magenta = danger &amp; drag</span>
+        </div>
+        <ul class="howto">
+          <li><b>Steer</b> drag anywhere · or ← → / A D</li>
+          <li><b>Boost</b> hold the button · or Space / W — watch the heat!</li>
+          <li><b>Survive</b> asteroids, storms, UAPs and black holes</li>
+        </ul>
+        <button id="launchBtn" class="big-btn">Launch 🚀</button>
+        <p id="best" class="best"></p>
+      </div>
+    </div>
+
+    <!-- ================= PAUSE ================= -->
+    <div id="pause" class="screen hidden">
+      <div class="card">
+        <h2>Paused</h2>
+        <div class="col">
+          <button id="resumeBtn" class="big-btn">Resume</button>
+          <button id="restartBtn" class="mid-btn">Restart launch</button>
+          <button id="soundBtn" class="mid-btn">🔊 Sound on</button>
+          <a class="mid-btn link" href="index.html">← Back to games</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= END ================= -->
+    <div id="end" class="screen hidden">
+      <div class="card end-card">
+        <div id="endIcon" class="end-icon">✨</div>
+        <h2 id="endTitle">You reached the Rim!</h2>
+        <div id="stars" class="stars"></div>
+        <p id="endText" class="end-text"></p>
+        <div id="endStats" class="end-stats"></div>
+        <div class="col">
+          <button id="againBtn" class="big-btn">Launch again</button>
+          <a class="mid-btn link" href="index.html">← Back to games</a>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/rocket.js"></script>
+  </body>
+</html>
