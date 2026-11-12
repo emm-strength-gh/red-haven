@@ -50,7 +50,7 @@ export const TRACKS = [
     tags: ['Loop', 'Jump', 'Shortcut'],
     difficulty: 1,
     laps: 3,
-    width: 16,
+    width: 18,
     walls: true,
     points: rounded([
       { p: [0, 0], r: 0, y: 0.5 },
@@ -65,7 +65,7 @@ export const TRACKS = [
       { p: [-150, 0], r: 34, y: 0.5 }
     ], { scale: S }),
     shortcuts: [
-      { name: 'Toy Box Tunnel', width: 9, surface: 'road', walls: true, tunnel: true,
+      { name: 'Toy Box Tunnel', width: 10, surface: 'road', walls: true, tunnel: true,
         points: [[100 * S, -110 * S], [40 * S, -110 * S], [5 * S, -118 * S], [-25 * S, -136 * S], [-60 * S, -150 * S]] }
     ],
     features: [
@@ -103,7 +103,7 @@ export const TRACKS = [
     tags: ['Traffic', 'Alley', 'Ramp'],
     difficulty: 2,
     laps: 3,
-    width: 18,
+    width: 20,
     walls: true,
     points: rounded([
       { p: [0, 0], r: 0 },
@@ -117,7 +117,7 @@ export const TRACKS = [
       { p: [-140, 0], r: 24 }
     ], { scale: 1.15 }),
     shortcuts: [
-      { name: 'Back Alley', width: 9, surface: 'road', walls: true,
+      { name: 'Back Alley', width: 10, surface: 'road', walls: true,
         points: [[82 * 1.15, -160 * 1.15], [10 * 1.15, -160 * 1.15], [-62 * 1.15, -160 * 1.15]] }
     ],
     features: [
@@ -156,7 +156,7 @@ export const TRACKS = [
     tags: ['Gap jump', 'Dirt cut', 'Hills'],
     difficulty: 2,
     laps: 3,
-    width: 16,
+    width: 18,
     walls: false,
     embank: true,
     offroad: 'sand',
@@ -167,7 +167,7 @@ export const TRACKS = [
       [-238, -90, 2], [-210, -38, 1], [-140, -8, 0], [-70, 0, 0]
     ],
     shortcuts: [
-      { name: 'Dirt Cut', width: 10, surface: 'dirt', walls: false,
+      { name: 'Dirt Cut', width: 11, surface: 'dirt', walls: false,
         points: [[-82, -145], [-130, -110], [-180, -75], [-217, -50]] }
     ],
     features: [
@@ -205,7 +205,7 @@ export const TRACKS = [
     tags: ['Mountain', 'Ice', 'Lake cut'],
     difficulty: 3,
     laps: 3,
-    width: 15,
+    width: 17,
     walls: true,
     embank: true,
     offroad: 'snow',
@@ -215,7 +215,7 @@ export const TRACKS = [
       [-115, -100, 11], [-150, -55, 7], [-130, -5, 4], [-70, 15, 1]
     ],
     shortcuts: [
-      { name: 'Frozen Lake', width: 13, surface: 'ice', walls: false,
+      { name: 'Frozen Lake', width: 14, surface: 'ice', walls: false,
         points: [[155, -26], [150, -70], [148, -115], [142, -165]] }
     ],
     features: [
@@ -253,7 +253,7 @@ export const TRACKS = [
     tags: ['Figure 8', '2 Loops', 'Bridge jump'],
     difficulty: 3,
     laps: 3,
-    width: 14,
+    width: 16,
     walls: true,
     points: [
       [100, -72, 0.5], [150, -74, 0.5], [200, -75, 0.5], [240, -42, 0.5], [242, 0, 0.5], [240, 40, 0.5],
@@ -296,7 +296,7 @@ export const TRACKS = [
     tags: ['Giant garden', 'Jumps', 'Shortcut'],
     difficulty: 2,
     laps: 3,
-    width: 15,
+    width: 17,
     walls: true,
     offroad: 'grass',
     points: [
@@ -305,7 +305,7 @@ export const TRACKS = [
       [-160, -105, 1.5], [-120, -70, 0.5], [-130, -25, 0.5], [-70, 0, 0.5]
     ],
     shortcuts: [
-      { name: 'Watering Can Run', width: 9, surface: 'road', walls: true,
+      { name: 'Watering Can Run', width: 10, surface: 'road', walls: true,
         points: [[-35, -170], [-70, -135], [-110, -112], [-140, -100]] }
     ],
     features: [
@@ -337,10 +337,10 @@ export const TRACKS = [
 ];
 
 export const CARS = [
-  { id: 'flame', name: 'Flame Fury', style: 'racer', color: '#ff3b2f', accent: '#ffd400', top: 51, accel: 26, grip: 9.5, turn: 2.35, offroad: 0.55, nitroPower: 1 },
-  { id: 'muscle', name: 'Big Mike', style: 'muscle', color: '#2f6bff', accent: '#ffffff', top: 54, accel: 23, grip: 8, turn: 2.1, offroad: 0.55, nitroPower: 1.1 },
-  { id: 'buggy', name: 'Dune Bug', style: 'buggy', color: '#4fd34a', accent: '#ff8a00', top: 48, accel: 28, grip: 10.5, turn: 2.6, offroad: 0.82, nitroPower: 0.95 },
-  { id: 'rocket', name: 'Rocket Wedge', style: 'rocket', color: '#b04dff', accent: '#00e5ff', top: 58, accel: 21, grip: 7.5, turn: 1.95, offroad: 0.5, nitroPower: 1.3 }
+  { id: 'flame', name: 'Flame Fury', style: 'racer', color: '#ff3b2f', accent: '#ffd400', top: 45.9, accel: 26, grip: 9.5, turn: 2.35, offroad: 0.55, nitroPower: 1 },
+  { id: 'muscle', name: 'Big Mike', style: 'muscle', color: '#2f6bff', accent: '#ffffff', top: 48.6, accel: 23, grip: 8, turn: 2.1, offroad: 0.55, nitroPower: 1.1 },
+  { id: 'buggy', name: 'Dune Bug', style: 'buggy', color: '#4fd34a', accent: '#ff8a00', top: 43.2, accel: 28, grip: 10.5, turn: 2.6, offroad: 0.82, nitroPower: 0.95 },
+  { id: 'rocket', name: 'Rocket Wedge', style: 'rocket', color: '#b04dff', accent: '#00e5ff', top: 52.2, accel: 21, grip: 7.5, turn: 1.95, offroad: 0.5, nitroPower: 1.3 }
 ];
 
 export const AI_NAMES = ['Zoomer', 'Turbo Tess', 'Skid Kid', 'Max Wheels', 'Dash', 'Nitro Nell', 'Gears', 'Blaze'];
