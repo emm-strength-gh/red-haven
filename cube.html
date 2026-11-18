@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#120c2c" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Cube Lab — twist a glossy 3D puzzle cube. 40 levels of scrambles, patterns, locked layers and timed challenges, plus a free sandbox from 2×2 to 7×7 with shuffle, undo and auto-solve." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lilita+One&display=swap" />
+    <link rel="stylesheet" href="/src/cube.css" />
+    <title>Cube Lab — Red Haven</title>
+  </head>
+  <body>
+    <div class="backdrop" aria-hidden="true"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i></div>
+    <div id="stage" aria-label="Cube Lab game view"></div>
+    <div id="flash" class="flash" aria-hidden="true"></div>
+
+    <!-- ================= HUD ================= -->
+    <div id="hud" class="hud hidden">
+      <div class="hud-top">
+        <button id="menuBtn" class="round" aria-label="Menu">☰</button>
+        <div class="pill name-pill"><small id="hudSub">First Twists</small><b id="hudName">One Twist</b></div>
+        <div class="spacer"></div>
+        <div class="pill stat"><small>Moves</small><b><span id="moveCount">0</span><i id="parWrap"> / <span id="parCount">0</span></i></b></div>
+        <div class="pill stat" id="timePill"><small id="timeLabel">Time</small><b id="timeText">0:00</b></div>
+      </div>
+
+      <div id="preview" class="preview hidden" role="button" tabindex="0" aria-label="Target pattern — tap to see the back">
+        <span class="preview-label">Target · tap to flip</span>
+      </div>
+      <div id="lockInfo" class="lock-info hidden"></div>
+      <div id="toast" class="toast" role="status"></div>
+
+      <div id="pad" class="pad hidden" aria-label="Turn buttons (relative to your view)"></div>
+
+      <div class="tools" id="tools">
+        <button class="tool" id="undoBtn" aria-label="Undo"><span>↶</span><small>Undo</small></button>
+        <button class="tool" id="redoBtn" aria-label="Redo" data-mode="sandbox"><span>↷</span><small>Redo</small></button>
+        <button class="tool" id="hintBtn" aria-label="Hint" data-mode="level"><span>💡</span><small>Hint</small></button>
+        <button class="tool" id="restartBtn" aria-label="Restart level" data-mode="level"><span>⟲</span><small>Restart</small></button>
+        <button class="tool primary" id="shuffleBtn" aria-label="Shuffle" data-mode="sandbox"><span>🔀</span><small>Shuffle</small></button>
+        <button class="tool" id="solveBtn" aria-label="Auto-solve" data-mode="sandbox"><span>✨</span><small>Solve</small></button>
+        <button class="tool" id="resetBtn" aria-label="Reset to solved" data-mode="sandbox"><span>⟲</span><small>Reset</small></button>
+        <button class="tool" id="sizeBtn" aria-label="Cube size" data-mode="sandbox"><span id="sizeIcon">3×3</span><small>Size</small></button>
+        <button class="tool" id="padBtn" aria-label="Show turn buttons"><span>⌨</span><small>Pad</small></button>
+      </div>
+    </div>
+
+    <!-- ================= TITLE ================= -->
+    <section id="title" class="screen title-screen">
+      <div class="title-card">
+        <a class="home" href="index.html">← Games</a>
+        <p class="kicker">Twist · Shuffle · Solve</p>
+        <h1><span class="t1">Cube</span><span class="t2">Lab</span></h1>
+        <p class="tag">A glossy 3D puzzle cube with 40 hand-picked challenges and a free sandbox.</p>
+        <div class="title-btns">
+          <button id="levelsBtn" class="big-btn"><span>🧩</span> Puzzles &amp; Levels</button>
+          <button id="sandboxBtn" class="big-btn alt"><span>🔀</span> Free Sandbox</button>
+          <button id="settingsBtn" class="mid-btn">⚙️ Settings</button>
+        </div>
+        <p id="titleStats" class="title-stats"></p>
+      </div>
+    </section>
+
+    <!-- ================= LEVEL SELECT ================= -->
+    <section id="levels" class="screen hidden" aria-label="Level select">
+      <div class="panel levels-panel">
+        <div class="levels-head">
+          <button id="levelsBack" class="small-btn">← Back</button>
+          <h2>Puzzles</h2>
+          <span id="starTotal" class="star-total">★ 0</span>
+        </div>
+        <div id="chapterList" class="chapter-list"></div>
+      </div>
+    </section>
+
+    <!-- ================= SANDBOX SIZE ================= -->
+    <section id="sizes" class="screen hidden" aria-label="Choose a cube size">
+      <div class="panel">
+        <h2>Pick a cube</h2>
+        <p class="sub">Shuffle it, solve it, or just play with it.</p>
+        <div id="sizeGrid" class="size-grid"></div>
+        <button id="sizesBack" class="mid-btn">Cancel</button>
+      </div>
+    </section>
+
+    <!-- ================= LEVEL INTRO ================= -->
+    <section id="intro" class="screen hidden">
+      <div class="panel intro-panel">
+        <p class="kicker" id="introKicker">Chapter 1 · Level 1</p>
+        <h2 id="introName">One Twist</h2>
+        <p id="introGoal" class="goal"></p>
+        <div id="introRules" class="rules"></div>
+        <p id="introTip" class="tip"></p>
+        <button id="introGo" class="big-btn">Let's twist!</button>
+        <button id="introBack" class="mid-btn">← Levels</button>
+      </div>
+    </section>
+
+    <!-- ================= PAUSE ================= -->
+    <section id="pause" class="screen hidden">
+      <div class="panel">
+        <h2>Paused</h2>
+        <div class="col">
+          <button id="resumeBtn" class="big-btn">Resume</button>
+          <button id="pauseLevels" class="mid-btn">🧩 Levels</button>
+          <button id="pauseSandbox" class="mid-btn">🔀 Sandbox</button>
+          <button id="pauseSettings" class="mid-btn">⚙️ Settings</button>
+          <button id="pauseTitle" class="mid-btn">⌂ Title screen</button>
+        </div>
+        <p class="keys">Keys: <b>U D L R F B</b> turn (Shift = reverse) · <b>M E S</b> slices · <b>X Y Z</b> spin view · <b>Ctrl+Z</b> undo · <b>H</b> hint</p>
+      </div>
+    </section>
+
+    <!-- ================= SETTINGS ================= -->
+    <section id="settings" class="screen hidden">
+      <div class="panel">
+        <h2>Settings</h2>
+        <div class="setting"><span>Cube style</span><div class="seg" id="segTheme"></div></div>
+        <div class="setting"><span>Turn speed</span><div class="seg" id="segSpeed"></div></div>
+        <div class="setting"><span>Sound</span><div class="seg" id="segSound"></div></div>
+        <div class="setting"><span>Sandbox timer</span><div class="seg" id="segTimer"></div></div>
+        <button id="settingsDone" class="big-btn">Done</button>
+      </div>
+    </section>
+
+    <!-- ================= RESULT ================= -->
+    <section id="result" class="screen hidden">
+      <div class="panel result-panel">
+        <div id="resIcon" class="res-icon">🎉</div>
+        <h2 id="resTitle">Solved!</h2>
+        <div id="resStars" class="res-stars"></div>
+        <p id="resText" class="sub"></p>
+        <div id="resStats" class="res-stats"></div>
+        <div class="col">
+          <button id="resNext" class="big-btn">Next level →</button>
+          <div class="row">
+            <button id="resRetry" class="mid-btn">⟲ Retry</button>
+            <button id="resMenu" class="mid-btn">🧩 Levels</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script type="module" src="/src/cube.js"></script>
+  </body>
+</html>
