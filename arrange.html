@@ -17,8 +17,8 @@
     <header class="hud hidden" id="hud">
       <a class="home" href="index.html">← Home</a>
       <div class="stats">
-        <div class="stat target"><small>Tap next</small><b id="nextNumber">1</b></div>
-        <div class="stat"><small>Stacked</small><b id="progress">0 / 10</b></div>
+        <div class="stat target"><small id="targetLabel">Tap next</small><b id="nextNumber">1</b></div>
+        <div class="stat"><small id="progressLabel">Stacked</small><b id="progress">0 / 10</b></div>
         <div class="stat misses"><small>Oops!</small><b id="misses">0</b></div>
       </div>
       <button id="newRange" class="small-btn" type="button">New range</button>
@@ -40,15 +40,19 @@
         <a class="home" href="index.html">← Home</a>
         <div class="badge">Mars number game</div>
         <h1>Arrange<br><span>Numbers</span></h1>
-        <p class="sub">Pick a range, then tap the colorful blocks from smallest to largest. Each correct block rolls into the number wall!</p>
+        <div class="mode-toggle" role="radiogroup" aria-label="Game mode">
+          <label><input type="radio" name="mode" value="order" checked /><span>🔢 Put in order</span></label>
+          <label><input type="radio" name="mode" value="match" /><span>🔤 Match words</span></label>
+        </div>
+        <p class="sub" id="modeSub">Pick a range, then tap the colorful blocks from smallest to largest. Each correct block rolls into the number wall!</p>
         <div class="range-inputs">
           <label>From<input id="rangeStart" name="rangeStart" type="number" inputmode="numeric" min="0" max="9999" step="1" value="1" required /></label>
           <span class="dash" aria-hidden="true">→</span>
           <label>To<input id="rangeEnd" name="rangeEnd" type="number" inputmode="numeric" min="0" max="9999" step="1" value="10" required /></label>
         </div>
         <p class="validation" id="validation" role="alert"></p>
-        <button class="btn green" type="submit">Start arranging</button>
-        <p class="tip">Try 1–10 or 51–90 · up to 60 blocks<br>Drag or wheel-scroll to explore; pinch or use +/− to zoom.</p>
+        <button class="btn green" id="startBtn" type="submit">Start arranging</button>
+        <p class="tip"><span id="modeTip">Try 1–10 or 51–90 · up to 60 blocks</span><br>Drag or wheel-scroll to explore; pinch or use +/− to zoom.</p>
       </form>
     </section>
 

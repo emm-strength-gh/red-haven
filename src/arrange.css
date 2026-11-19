@@ -57,6 +57,12 @@ h1 { font-size: clamp(3.35rem, 13vw, 5rem); }
 h1 span { color: #5ed3f3; }
 h2 { font-size: clamp(2.6rem, 10vw, 4rem); }
 .sub { margin: 0; line-height: 1.36; font-weight: 500; color: var(--muted); }
+.mode-toggle { display: flex; gap: 8px; }
+.mode-toggle label { flex: 1; position: relative; }
+.mode-toggle input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.mode-toggle span { display: block; padding: 8px 6px; border: 3px solid var(--ink); border-radius: 14px; background: var(--paper); box-shadow: 0 4px 0 var(--ink); font-weight: 700; font-size: .95rem; white-space: nowrap; }
+.mode-toggle input:checked + span { background: #5ed3f3; transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
+.mode-toggle input:focus-visible + span { outline: 3px solid var(--yellow); outline-offset: 3px; }
 .range-inputs { display: flex; align-items: end; justify-content: center; gap: 10px; }
 .range-inputs label { display: flex; flex-direction: column; gap: 4px; width: 42%; text-align: left; font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 .range-inputs input { width: 100%; min-width: 0; background: var(--paper); border: 3px solid var(--ink); border-radius: 14px; padding: 9px 12px; text-align: center; font-family: var(--head); font-size: 1.8rem; color: var(--ink); box-shadow: 0 4px 0 var(--ink); }
