@@ -177,7 +177,7 @@ class SpellGame {
 
   // ---------------------------------------------------------- settings
   loadSettings() {
-    const d = { sound: true, voice: true, autoHint: true, ghost: false, extra: 4, disabled: [], custom: [] };
+    const d = { sound: true, voice: true, autoHint: true, ghostCube: true, extra: 4, disabled: [], custom: [] };
     try { return { ...d, ...JSON.parse(localStorage.getItem(SETTINGS_KEY)) }; } catch { return d; }
   }
   saveSettings() { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings)); } catch { /* blocked */ } }
@@ -331,6 +331,12 @@ class SpellGame {
     this.shelf.position.set(0, 0, SHELF_Z);
     this.scene.add(this.shelf);
     this.shelfLamps = [];
+    this.ghostTexCache = new Map();
+    this.ghostGuide = new THREE.Group();
+    this.ghostCube = new THREE.Mesh(geo.box(1, 1, 1), new THREE.MeshBasicMaterial({ color: '#d7e8e7', transparent: true, opacity: 0.2, depthWrite: false }));
+    this.ghostLetter = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.42, depthWrite: false }));
+    this.ghostGuide.add(this.ghostCube, this.ghostLetter);
+    this.ghostGuide.traverse((o) => { o.raycast = () => {}; });
   }
 
   setPicture(emoji) {
@@ -355,20 +361,32 @@ class SpellGame {
     for (let i = 0; i < n; i++) {
       const p = this.slotPos(i);
       const slot = new THREE.Mesh(geo.box(this.slot * 0.88, 0.04, this.slot * 0.88), toon('#8a5a34')); slot.position.set(p.x, 0.6, 0); slot.receiveShadow = true; sh.add(slot);
-      if (this.settings.ghost) {
-        const gm = new THREE.Mesh(new THREE.PlaneGeometry(this.bs * 0.8, this.bs * 0.8), new THREE.MeshBasicMaterial({ map: this.ghostTex(this.word[i]), transparent: true, depthWrite: false }));
-        gm.position.set(p.x, 0.66 + this.bs * 0.4, 0.2); sh.add(gm);
-      }
     }
+    this.ghostCube.scale.setScalar(this.bs * 0.92);
+    this.ghostLetter.scale.setScalar(this.bs * 0.72);
+    this.ghostLetter.position.z = this.bs * 0.46 + 0.015;
+    sh.add(this.ghostGuide);
   }
   slotPos(i) { return new THREE.Vector3((i - (this.word.length - 1) / 2) * this.slot, 0.6 + this.bs / 2 + 0.02, SHELF_Z); }
 
   ghostTex(letter) {
+    if (this.ghostTexCache.has(letter)) return this.ghostTexCache.get(letter);
     const cv = document.createElement('canvas'); cv.width = cv.height = 128;
     const c = cv.getContext('2d');
     c.font = '96px "Lilita One","Fredoka",sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillStyle = 'rgba(42,31,61,0.28)'; c.fillText(letter, 64, 70);
-    const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t;
+    c.fillStyle = '#3c3a4b'; c.fillText(letter, 64, 70);
+    const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+    this.ghostTexCache.set(letter, t);
+    return t;
+  }
+
+  updateGhostGuide() {
+    this.ghostGuide.visible = this.settings.ghostCube && this.filled < this.word.length;
+    if (!this.ghostGuide.visible) return;
+    const p = this.slotPos(this.filled);
+    this.ghostGuide.position.set(p.x, p.y, 0);
+    this.ghostLetter.material.map = this.ghostTex(this.word[this.filled]);
+    this.ghostLetter.material.needsUpdate = true;
   }
 
   // ---------------------------------------------------------- letter blocks
@@ -449,6 +467,7 @@ class SpellGame {
     this.buildShelf(n);
     this.setPicture(item.e);
     this.filled = 0; this.placed = 0; this.wrong = 0; this.streak = 0; this.idle = 0;
+    this.updateGhostGuide();
     const pool = shuffle(ALPHABET.filter((l) => !this.word.includes(l)));
     const letters = shuffle([...this.word, ...pool.slice(0, this.settings.extra)]);
     letters.forEach((l, i) => this.spawnBlock(l, 0.25 + i * 0.07));
@@ -463,6 +482,7 @@ class SpellGame {
     this.idle = 0;
     if (b.letter === this.word[this.filled]) {
       b.state = 'roll'; b.slot = this.filled++; b.t = 0;
+      this.updateGhostGuide();
       b.from = b.mesh.position.clone(); b.to = this.slotPos(b.slot);
       b.dist = Math.hypot(b.to.x - b.from.x, b.to.z - b.from.z);
       b.dur = 0.8 + b.dist * 0.045;
@@ -704,7 +724,7 @@ class SpellGame {
 
   renderSettings() {
     const s = this.settings;
-    const labels = { sound: ['🔊 Sound effects', '🔇 Sound effects'], voice: ['🗣️ Say the words', '🤐 Say the words'], autoHint: ['💡 Helpful hints', '💡 Helpful hints'], ghost: ['👀 Faint letters on shelf', '👀 Faint letters on shelf'] };
+    const labels = { sound: ['🔊 Sound effects', '🔇 Sound effects'], voice: ['🗣️ Say the words', '🤐 Say the words'], autoHint: ['💡 Helpful hints', '💡 Helpful hints'], ghostCube: ['👻 Subtle ghost cube', '👻 Subtle ghost cube'] };
     document.querySelectorAll('.toggle').forEach((b) => { const on = s[b.dataset.opt]; b.textContent = `${labels[b.dataset.opt][on ? 0 : 1]}: ${on ? 'ON' : 'OFF'}`; b.classList.toggle('off', !on); });
     this.$('extraSeg').querySelectorAll('button').forEach((b) => b.classList.toggle('on', Number(b.dataset.n) === s.extra));
     this.$('btnSound').textContent = s.sound ? '🔊' : '🔇';

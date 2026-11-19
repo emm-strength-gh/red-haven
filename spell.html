@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
     <meta name="theme-color" content="#2a1f3d" />
     <meta name="description" content="Spell It on Mars — a gentle low-poly 3D spelling game for little ones. Tap the letters to spell the picture." />
+    <script id="local-spell-redirect">if (location.protocol === 'file:') location.replace('./spell-local.html');</script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -47,7 +48,7 @@
           <button class="toggle" data-opt="sound"></button>
           <button class="toggle" data-opt="voice"></button>
           <button class="toggle" data-opt="autoHint"></button>
-          <button class="toggle" data-opt="ghost"></button>
+          <button class="toggle" data-opt="ghostCube"></button>
         </div>
         <div class="set-row"><span>Extra letters on the ground</span>
           <div class="seg" id="extraSeg"><button data-n="2">2</button><button data-n="4">4</button><button data-n="6">6</button></div>
