@@ -59,7 +59,7 @@ export class MarsAmbience {
     this.layout = layout;
     this.timer = 3.5;
     if (!layout) return;
-    const edge = (layout.cols - 1) * layout.spacing / 2 + 1.25;
+    const edge = layout.halfWidth ? layout.halfWidth + 1.25 : (layout.cols - 1) * layout.spacing / 2 + 1.25;
     const depth = .8 + (layout.rows - 1) * layout.spacing;
 
     // Side terrain is near enough to see, but never covers a playable tile.
@@ -132,7 +132,7 @@ export class MarsAmbience {
     this.audio.event(sound);
     this.onEvent(name);
     const l = this.layout;
-    const edge = (l.cols - 1) * l.spacing / 2 + 1.3;
+    const edge = l.halfWidth ? l.halfWidth + 1.3 : (l.cols - 1) * l.spacing / 2 + 1.3;
     const side = Math.random() < .5 ? -1 : 1;
     const x = side * edge;
     const z = .8 + Math.floor(l.rows / 2) * l.spacing;

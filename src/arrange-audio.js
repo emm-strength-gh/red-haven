@@ -62,6 +62,8 @@ export class ArrangeAudio {
 
   correct() { this.tone(520, .11, 'triangle', .11, 1.35); this.tone(780, .16, 'triangle', .08, 1.2, .08); }
   land() { this.tone(185, .12, 'sine', .13, .55); }
+  pick() { this.tone(640, .08, 'triangle', .07, 1.25); }
+  drop() { this.tone(330, .1, 'sine', .06, .8); }
   wrong() { this.noise(.23, .13, 1450); this.tone(270, .21, 'square', .055, .45); }
   win() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, .3, 'triangle', .1, 1.05, i * .12)); }
 
