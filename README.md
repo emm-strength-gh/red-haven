@@ -1,6 +1,6 @@
 # Red Haven
 
-A mobile-minded collection of low-poly 3D games and tools, including a colony survival prototype set on a habitable Mars. The colony game has Expedition and Endless modes, construction, automated colonists, gathering, raids, random events, and local saves. The hub also includes Snakes, Tetris, Arrange Numbers, Spell It!, Color Pour, Frostfall, the Body Mechanics pose studio, Tumble Temple, Little Cup Plaza, Toy Cars Racing, Rocket to the Rim, Cube Lab, and Commute City. The site is PWA-ready for offline play.
+A mobile-minded collection of low-poly 3D games and tools, including a colony survival prototype set on a habitable Mars. The colony game has Expedition and Endless modes, construction, automated colonists, gathering, raids, random events, and local saves. The hub also includes Snakes, Tetris, Arrange Numbers, Spell It!, Color Pour, Frostfall, the Body Mechanics pose studio, Tumble Temple, Little Cup Plaza, Toy Cars Racing, Rocket to the Rim, Cube Lab, Commute City, and a GTA 1 mobile player. Most games are available offline through the PWA; the GTA browser engine needs a network connection.
 
 ## Run locally
 
@@ -14,6 +14,8 @@ Open the URL printed by Vite. For a production build, run `npm run build`. The s
 You can also play Spell It! by double clicking `spell.html`. It opens the included `spell-local.html`, which works from a local folder. After changing the spelling game, run `npm run build:spell-local` to refresh that copy.
 
 ## Controls
+
+- In GTA 1 Mobile, transfer a ZIP of your own original GTA `GTADATA` folder to your phone. The Red Haven page opens GTA.js in a separate tab because GTA.js refuses cross-site embedding. Choose **+ Add .zip** there, select your ZIP, then choose the new data source and play. The engine provides touch controls. GTA.js is an independent third-party reimplementation loaded over the internet; its behavior can differ from the original. No GTA files are included in this repository or its GitHub Pages build.
 
 - On the landing page, choose a game. Arrange Numbers lets you enter a whole-number range from 0–9999, with up to 60 blocks per round.
 - In Arrange Numbers, tap blocks in ascending order. Correct blocks roll to the wall; wrong blocks burst and reappear in a new free spot. Drag or wheel-scroll to explore, pinch or use +/− to zoom, and use Center to reset the view. The Mars scene has 15 rotating background events; the comet button starts the next one. Sound effects can be muted.
