@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#4fb8ff" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Commute City — a toy-town traffic strategy game. Build roads, motorways, flyovers, tunnels, trams and trains, run the traffic lights and ride along with any car." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" />
+    <link rel="stylesheet" href="/src/traffic.css" />
+    <title>Commute City — Red Haven</title>
+  </head>
+  <body>
+    <div id="stage"></div>
+
+    <!-- labels anchored to the 3D world -->
+    <div id="worldUi" class="world-ui">
+      <div id="stopTags"></div>
+      <div id="pins"></div>
+      <div id="marks"></div>
+      <div id="sigBtns"></div>
+      <div id="pops"></div>
+    </div>
+
+    <!-- ================= HUD ================= -->
+    <div id="hud" class="hud hidden">
+      <div class="hud-top">
+        <button id="menuBtn" class="ibtn" aria-label="Pause menu">☰</button>
+        <div class="chip" id="chipMoney"><i>🪙</i><div><small>Money</small><b id="hudMoney">$0</b></div></div>
+        <div class="chip" id="chipClock"><i id="hudSun">☀️</i><div><small id="hudDay">Day 1</small><b id="hudTime">06:00</b></div><em id="hudRush" class="rush hidden">RUSH</em></div>
+        <div class="chip" id="chipTrips"><i>🚗</i><div><small>Trips</small><b id="hudTrips">0</b></div></div>
+        <div class="chip goal" id="chipGoal">
+          <div><small id="hudGoalLabel">Trips</small><b id="hudGoal">0 / 15</b></div>
+          <div class="bar"><i id="hudGoalBar"></i></div>
+        </div>
+        <div class="chip" id="chipPar"><i>⭐</i><div><small>Spent · par</small><b id="hudPar">$0 · $80</b></div></div>
+        <div class="chip" id="chipStrikes"><div><small>Lives</small><b id="hudStrikes">❤️❤️❤️</b></div></div>
+        <div class="spacer"></div>
+        <div class="speed" id="speedBox">
+          <button data-sp="0" aria-label="Pause" title="Pause (Space)">⏸</button>
+          <button data-sp="1" aria-label="Play" title="Play">▶</button>
+          <button data-sp="2" aria-label="Fast" title="Fast">⏩</button>
+          <button data-sp="4" aria-label="Fastest" title="Fastest">⏭</button>
+        </div>
+        <div class="hud-btns">
+          <button id="rideBtn" class="ibtn" aria-label="Ride along with a vehicle" title="Ride along (C)">🎥</button>
+          <button id="viewBtn" class="ibtn" aria-label="Switch between top and tilted view" title="Top / tilted view (V)">🔭</button>
+          <button id="linesBtn" class="ibtn" aria-label="Transit lines" title="Transit lines">🚋</button>
+        </div>
+      </div>
+
+      <div id="banner" class="banner hidden">
+        <b id="bannerTitle"></b>
+        <span id="bannerText"></span>
+        <button id="bannerGo" class="go">▶ Start traffic</button>
+      </div>
+
+      <div id="costTag" class="cost-tag hidden"></div>
+      <div id="inspector" class="inspector hidden"></div>
+      <div id="linesPanel" class="lines-panel hidden"></div>
+      <div id="lineDraft" class="line-draft hidden"></div>
+
+      <div class="bottom">
+        <div id="subBar" class="sub-bar"></div>
+        <div id="toolbar" class="toolbar"></div>
+      </div>
+    </div>
+
+    <div id="toasts" class="toasts"></div>
+
+    <!-- ================= RIDE ALONG ================= -->
+    <div id="rideHud" class="ride-hud hidden">
+      <div class="ride-card">
+        <div class="ride-icon" id="rideIcon">🚗</div>
+        <div><b id="rideTitle">Red car</b><small id="rideSub">On the way</small></div>
+      </div>
+      <div class="ride-speed"><b id="rideSpeed">0</b><small>km/h</small></div>
+      <div class="ride-btns">
+        <button id="rideView" class="pbtn">🎥 Driver view</button>
+        <button id="rideNext" class="pbtn">🔀 Another</button>
+        <button id="rideExit" class="pbtn red">✕ Exit</button>
+      </div>
+    </div>
+
+    <!-- ================= TITLE ================= -->
+    <section id="title" class="screen title-screen">
+      <a class="home" href="index.html">← Games</a>
+      <div class="title-wrap">
+        <div class="logo" aria-label="Commute City">
+          <span class="l1">COMMUTE</span>
+          <span class="l2">CITY</span>
+          <span class="car" aria-hidden="true">🚗</span>
+        </div>
+        <p class="tag">Roads · motorways · flyovers · tunnels · trams · trains</p>
+        <nav class="menu">
+          <button class="mcard c-city" id="mCity"><i>🏙️</i><b>City</b><small>Grow a town and keep it moving</small><em id="mCityBest"></em></button>
+          <button class="mcard c-puz" id="mPuz"><i>🧩</i><b>Road Puzzles</b><small>Tight budgets, clever routes</small><em id="mPuzStars"></em></button>
+          <button class="mcard c-sig" id="mSig"><i>🚦</i><b>Signal Levels</b><small>Tap the lights, dodge the crashes</small><em id="mSigStars"></em></button>
+          <button class="mcard c-sand" id="mSand"><i>🏗️</i><b>Sandbox</b><small>Endless · free money · no fails</small><em></em></button>
+        </nav>
+        <div class="title-foot">
+          <button id="mSound" class="pill-btn">🔊 Sound on</button>
+          <button id="mQuality" class="pill-btn">✨ High detail</button>
+          <button id="mHelp" class="pill-btn">❓ How to play</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PICKER (maps / levels) ================= -->
+    <section id="pick" class="screen pick-screen hidden">
+      <div class="pick-wrap">
+        <div class="pick-head">
+          <button class="back" id="pickBack">← Back</button>
+          <h2 id="pickTitle">Choose a map</h2>
+        </div>
+        <p id="pickSub" class="pick-sub"></p>
+        <div id="pickGrid" class="pick-grid"></div>
+      </div>
+    </section>
+
+    <div id="modal" class="modal hidden"><div class="modal-card" id="modalCard"></div></div>
+
+    <script type="module" src="/src/traffic.js"></script>
+  </body>
+</html>
