@@ -5,7 +5,7 @@ export default defineConfig({
   base: './',
   build: {
     rollupOptions: {
-      input: { main: 'index.html', redhaven: 'redhaven.html', snakes: 'snakes.html', tetris: 'tetris.html', arrange: 'arrange.html', spell: 'spell.html', pour: 'pour.html', frost: 'frost.html', mechanics: 'mechanics.html', tumble: 'tumble.html', cafe: 'cafe.html', racing: 'racing.html', rocket: 'rocket.html', cube: 'cube.html' }
+      input: { main: 'index.html', redhaven: 'redhaven.html', snakes: 'snakes.html', tetris: 'tetris.html', arrange: 'arrange.html', spell: 'spell.html', pour: 'pour.html', frost: 'frost.html', mechanics: 'mechanics.html', tumble: 'tumble.html', cafe: 'cafe.html', racing: 'racing.html', rocket: 'rocket.html', cube: 'cube.html', traffic: 'traffic.html' }
     }
   },
   plugins: [VitePWA({
@@ -26,7 +26,7 @@ export default defineConfig({
     manifest: {
       name: 'Red Haven',
       short_name: 'Red Haven',
-      description: 'Low-poly cartoon games: Mars colony survival, arcade adventures, colorful puzzles and a mall tycoon sim, a toy-car racer and a 3D puzzle cube.',
+      description: 'Low-poly cartoon games: Mars colony survival, arcade adventures, colorful puzzles and a mall tycoon sim, a toy-car racer, a 3D puzzle cube and a traffic city builder.',
       theme_color: '#111b20',
       background_color: '#111b20',
       display: 'standalone',
