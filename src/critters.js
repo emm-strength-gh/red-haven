@@ -7,6 +7,7 @@ import {
   THEMES, THEME_KEYS, STAGES, LEVELS, DIFFS, TEAM_COLORS, SHAPES, SKIRMISH_DEFAULTS, levelMatch, skirmishMatch, demoMatch,
 } from './critters-levels.js';
 import { createWorld } from './critters-world.js';
+import { createSprites } from './critters-sprites.js';
 import { createAudio } from './critters-audio.js';
 
 const $ = (id) => document.getElementById(id);
@@ -17,7 +18,7 @@ const isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in win
 // ------------------------------------------------------------------ save
 const save = loadSave();
 function loadSave() {
-  const base = { diff: 'easy', medals: {}, stage: 0, settings: { sound: true, quality: 'high', guide: true, cam: '2d' }, skirmish: { ...SKIRMISH_DEFAULTS }, helped: false };
+  const base = { diff: 'easy', medals: {}, stage: 0, settings: { sound: true, quality: 'high', guide: true, cam: '2d', sprites: false }, skirmish: { ...SKIRMISH_DEFAULTS }, helped: false };
   try {
     const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
     if (s && typeof s === 'object') return { ...base, ...s, settings: { ...base.settings, ...(s.settings || {}) }, skirmish: { ...base.skirmish, ...(s.skirmish || {}) } };
@@ -38,15 +39,25 @@ $('stage').appendChild(renderer.domElement);
 const canvas = renderer.domElement;
 const world = createWorld();
 const camera = world.camera;
+// flat 2D sprite renderer drawn on its own canvas over the 3D one (input still goes to the 3D canvas)
+const spriteCanvas = document.createElement('canvas');
+spriteCanvas.className = 'sprites';
+$('stage').appendChild(spriteCanvas);
+const sprites = createSprites(spriteCanvas);
+const spritesOn = () => save.settings.sprites;
+const view = () => (spritesOn() ? sprites : world);
+let worldStale = false; // the 3D terrain missed craters while sprites were drawing
 function applyQuality() {
   const hi = save.settings.quality === 'high';
   renderer.setPixelRatio(Math.min(hi ? 2 : 1, window.devicePixelRatio || 1));
+  sprites.resize(innerWidth, innerHeight, Math.min(hi ? 2 : 1, window.devicePixelRatio || 1));
   renderer.shadowMap.enabled = hi;
   world.setShadows(hi);
   world.scene.traverse((o) => { if (o.material && !Array.isArray(o.material)) o.material.needsUpdate = true; });
 }
 function resize() {
   renderer.setSize(innerWidth, innerHeight, false);
+  sprites.resize(innerWidth, innerHeight, Math.min(save.settings.quality === 'high' ? 2 : 1, window.devicePixelRatio || 1));
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
 }
@@ -122,7 +133,7 @@ function startDemo() {
   const cfg = demoMatch((Math.random() * 1e9) >>> 0);
   startMatch(cfg, 'demo', null);
   audio.setQuiet(0);
-  cam.mode = '3d'; cam.blend = 1; cam.spin = true; cam.zoom = 0.75; cam.pitch = 0.32;
+  cam.mode = spritesOn() ? '2d' : '3d'; cam.blend = cam.mode === '3d' ? 1 : 0; cam.spin = true; cam.zoom = 0.75; cam.pitch = 0.32;
 }
 $('mCampaign').onclick = () => { audio.unlock(); audio.click(); openCampaign(); };
 $('mSkirmish').onclick = () => { audio.unlock(); audio.click(); openSkirmish(); };
@@ -302,6 +313,8 @@ function startMatch(cfg, mode, level) {
   G.over = false; G.overT = 0; G.resultShown = false; G.target = null; G.charge = null; G.paused = false;
   G.turnsPlayed = 0; G.lastBoom = null; G.demoT = 0;
   world.load(G.S, cfg.theme);
+  worldStale = false;
+  if (spritesOn()) sprites.load(G.S, cfg.theme);
   applyQuality();
   const c = Sim.active(G.S);
   cam.fx = c ? c.x : cfg.W / 2;
@@ -309,7 +322,7 @@ function startMatch(cfg, mode, level) {
   cam.zoom = 1.3; cam.free = false;
   if (mode !== 'demo') {
     audio.setQuiet(1);
-    cam.mode = save.settings.cam;
+    cam.mode = spritesOn() ? '2d' : save.settings.cam;
     cam.blend = cam.mode === '3d' ? 1 : 0;
     cam.yaw = 0.7; cam.pitch = 0.3;
     show('hud');
@@ -372,7 +385,7 @@ function updateTags() {
       tagEls.set(b.id, el);
       el._hp = -1;
     }
-    world.toScreen(b.x, b.y + b.r + 8, 0, w, h, screenPt);
+    view().toScreen(b.x, b.y + b.r + 8, 0, w, h, screenPt);
     if (!screenPt.vis) { el.style.opacity = 0; continue; }
     el.style.opacity = 1;
     el.style.transform = `translate(${screenPt.x.toFixed(1)}px, ${screenPt.y.toFixed(1)}px) translate(-50%, -100%)`;
@@ -388,7 +401,7 @@ function updatePops(dt) {
     const p = pops[i];
     p.t += dt;
     if (p.t >= p.life) { p.el.remove(); pops.splice(i, 1); continue; }
-    world.toScreen(p.x, p.y, 0, w, h, screenPt);
+    view().toScreen(p.x, p.y, 0, w, h, screenPt);
     const k = p.t / p.life;
     const s = p.el.classList.contains('word') ? Math.min(1, p.t * 8) * (1 + 0.15 * Math.sin(p.t * 20) * (1 - k)) : 1;
     p.el.style.transform = `translate(${screenPt.x.toFixed(1)}px, ${(screenPt.y - k * p.rise).toFixed(1)}px) translate(-50%, -50%) scale(${s.toFixed(3)})`;
@@ -480,7 +493,7 @@ function updateHud(dt) {
 
 // ------------------------------------------------------------------ events from the match
 function handleEvent(e) {
-  world.onEvent(e);
+  view().onEvent(e);
   const S = G.S;
   const demo = G.mode === 'demo';
   switch (e.type) {
@@ -594,6 +607,7 @@ function showSettings(inMatch) {
       <button data-t="sound">🔊 Sound <em>${st.sound ? 'On' : 'Off'}</em></button>
       <button data-t="guide">🎯 Aim guide (short trajectory) <em>${st.guide ? 'On' : 'Off'}</em></button>
       <button data-t="cam">🎥 Starting camera <em>${st.cam === '3d' ? '3D orbit' : '2D side view'}</em></button>
+      <button data-t="sprites">🖼️ Art style <em>${st.sprites ? '2D sprites' : 'Low-poly 3D'}</em></button>
       <button data-t="quality">✨ Graphics <em>${st.quality === 'high' ? 'High (shadows)' : 'Fast'}</em></button>
     </div>`;
   modal(`<h3>${inMatch ? 'Paused' : 'Settings'}</h3>${rowsHtml}
@@ -603,6 +617,7 @@ function showSettings(inMatch) {
       if (t === 'sound') { st.sound = !st.sound; audio.setEnabled(st.sound); }
       if (t === 'guide') st.guide = !st.guide;
       if (t === 'cam') st.cam = st.cam === '3d' ? '2d' : '3d';
+      if (t === 'sprites') setSprites(!st.sprites);
       if (t === 'quality') { st.quality = st.quality === 'high' ? 'low' : 'high'; applyQuality(); }
       persist();
       audio.click();
@@ -632,7 +647,7 @@ function showHelp(first = false, fromPause = false) {
         <li><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> walk · <kbd>Enter</kbd> jump · <kbd>Backspace</kbd> back flip</li>
         <li><kbd>↑</kbd><kbd>↓</kbd> / <kbd>W</kbd><kbd>S</kbd> aim · hold <kbd>Space</kbd> to charge, let go to fire</li>
         <li><kbd>Q</kbd><kbd>E</kbd> or <kbd>1</kbd>–<kbd>0</kbd> weapons · <kbd>Tab</kbd> weapon menu</li>
-        <li><kbd>V</kbd> 2D/3D camera · <kbd>R</kbd> spin · <kbd>C</kbd> centre · wheel zoom · right-drag look around · <kbd>Esc</kbd> pause</li>
+        <li><kbd>V</kbd> 2D/3D camera · <kbd>G</kbd> 2D sprite / low-poly art · <kbd>R</kbd> spin · <kbd>C</kbd> centre · wheel zoom · right-drag look around · <kbd>Esc</kbd> pause</li>
       </ul>
       <h4>🌬️ Tips</h4>
       <ul>
@@ -738,10 +753,31 @@ $('bBack').addEventListener('pointerdown', (e) => { e.preventDefault(); if (canM
 // ------------------------------------------------------------------ camera buttons
 function updateCamButtons() {
   $('camBtn').textContent = cam.mode === '3d' ? '🎥 2D' : '🎥 3D';
-  $('spinBtn').classList.toggle('hidden', cam.mode !== '3d');
+  $('camBtn').classList.toggle('hidden', spritesOn());
+  $('spinBtn').classList.toggle('hidden', cam.mode !== '3d' || spritesOn());
   $('spinBtn').classList.toggle('on', cam.spin);
+  $('sprBtn').textContent = spritesOn() ? '🧊 Low-poly' : '🖼️ 2D Sprite';
+  $('sprBtn').classList.toggle('on', spritesOn());
 }
+/** Switch between the low-poly 3D world and flat 2D sprites. The match itself is untouched. */
+function setSprites(on) {
+  save.settings.sprites = on;
+  persist();
+  spriteCanvas.classList.toggle('hidden', !on);
+  if (on) {
+    if (G.S) sprites.load(G.S, G.cfg.theme);
+    cam.mode = '2d'; cam.blend = 0;
+  } else {
+    if (G.S && worldStale) G.S.dirty.push([0, 0, G.S.W - 1, G.S.H - 1]);
+    worldStale = false;
+    sprites.dispose();
+    if (G.mode === 'demo') { cam.mode = '3d'; cam.blend = 1; } else cam.mode = save.settings.cam;
+  }
+  updateCamButtons();
+}
+$('sprBtn').onclick = () => { audio.click(); setSprites(!spritesOn()); };
 function toggleCam() {
+  if (spritesOn()) { toast('2D Sprite mode is a flat view — switch to 🧊 Low-poly for 3D'); return; }
   cam.mode = cam.mode === '3d' ? '2d' : '3d';
   if (cam.mode === '2d') { cam.yaw = Math.atan2(Math.sin(cam.yaw), Math.cos(cam.yaw)); }
   else if (Math.abs(cam.yaw) < 0.2) cam.yaw = 0.7;
@@ -776,6 +812,7 @@ addEventListener('keydown', (e) => {
     case 'KeyE': cycleWeapon(1); break;
     case 'Tab': case 'KeyI': e.preventDefault(); if ($('weaponPanel').classList.contains('hidden')) openWeapons(); else closeWeapons(); break;
     case 'KeyV': toggleCam(); break;
+    case 'KeyG': audio.click(); setSprites(!spritesOn()); break;
     case 'KeyR': if (cam.mode === '3d') { cam.spin = !cam.spin; updateCamButtons(); } break;
     case 'KeyC': cam.free = false; break;
     case 'Equal': case 'NumpadAdd': cam.zoom = clamp(cam.zoom * 1.15, 0.4, 2.4); break;
@@ -820,10 +857,10 @@ canvas.addEventListener('pointerdown', (e) => {
   const c = Sim.active(S);
   const w = WEAPONS[S.weapon];
   if (humanTurn() && c && (w.aim === 'power' || w.aim === 'angle') && e.button === 0) {
-    world.toScreen(c.x, c.y, 0, innerWidth, innerHeight, screenPt);
+    view().toScreen(c.x, c.y, 0, innerWidth, innerHeight, screenPt);
     const dx = c.facing * Math.cos(c.elev), dy = Math.sin(c.elev);
     const near = Math.hypot(screenPt.x - e.clientX, screenPt.y - e.clientY);
-    world.toScreen(c.x + dx * (c.r + 46), c.y + dy * (c.r + 46), 0, innerWidth, innerHeight, screenPt);
+    view().toScreen(c.x + dx * (c.r + 46), c.y + dy * (c.r + 46), 0, innerWidth, innerHeight, screenPt);
     const nearCross = Math.hypot(screenPt.x - e.clientX, screenPt.y - e.clientY);
     if (near < (isTouch ? 95 : 70) || nearCross < 40) { p.mode = 'aim'; Sim.hurry(S); aimAt(e.clientX, e.clientY, near < 30 && nearCross > 40); return; }
   }
@@ -860,7 +897,7 @@ function endPtr(e) {
   ptrs.delete(e.pointerId);
   if (ptrs.size < 2) pinch = null;
   if (p.mode === 'pan' && p.moved < 8 && G.S && humanTurn() && WEAPONS[G.S.weapon].aim === 'target') {
-    const pt = world.pick(e.clientX, e.clientY, innerWidth, innerHeight);
+    const pt = view().pick(e.clientX, e.clientY, innerWidth, innerHeight);
     if (pt) {
       Sim.hurry(G.S);
       if (G.S.weapon === 'teleport' && !Sim.canTeleport(G.S, Sim.active(G.S), pt.x, pt.y)) toast('No room there — pick an open spot');
@@ -878,7 +915,7 @@ canvas.addEventListener('wheel', (e) => {
 function aimAt(sx, sy, keepPower) {
   const S = G.S, c = Sim.active(S);
   if (!c) return;
-  const pt = world.pick(sx, sy, innerWidth, innerHeight);
+  const pt = view().pick(sx, sy, innerWidth, innerHeight);
   if (!pt) { toast('Turn the camera to aim'); return; }
   const dx = pt.x - c.x, dy = pt.y - c.y, d = Math.hypot(dx, dy);
   if (d < 6) return;
@@ -999,12 +1036,17 @@ function frame(t) {
     if (G.mode === 'demo') { G.demoT += dt; if (G.demoT > 240) startDemo(); }
   }
   updateCamera(blocked ? 0 : dt);
-  world.update(blocked ? 0 : dt, info());
+  if (spritesOn()) {
+    if (S && sprites.match !== S) sprites.load(S, G.cfg.theme);
+    sprites.update(blocked ? 0 : dt, info(), cam, innerWidth, innerHeight);
+    if (S && S.dirty.length) { worldStale = true; S.dirty.length = 0; }
+  } else world.update(blocked ? 0 : dt, info());
   updateTags();
   updatePops(blocked ? 0 : dt);
   updateHud(blocked ? 0 : dt);
-  renderer.render(world.scene, camera);
+  if (spritesOn()) sprites.render(); else renderer.render(world.scene, camera);
 }
+spriteCanvas.classList.toggle('hidden', !spritesOn());
 
 renderDiffRows();
 toTitle();
