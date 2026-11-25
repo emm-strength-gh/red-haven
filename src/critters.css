@@ -22,6 +22,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 .hidden { display: none !important; }
 #stage { position: fixed; inset: 0; }
 #stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+#stage canvas.sprites { position: absolute; inset: 0; pointer-events: none; }
 
 /* ---------------- world labels */
 .tags, .pops { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
