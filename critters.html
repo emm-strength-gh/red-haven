@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#2a1660" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Kaboom Critters" />
+    <meta name="screen-orientation" content="landscape" />
+    <meta name="description" content="Kaboom Critters — turn-based critter artillery on destructible low-poly islands. Classic 2D side view or spin the 3D camera around the battle. Campaign, skirmish and three CPU difficulties." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/critters-icon-192.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lilita+One&display=swap" />
+    <link rel="stylesheet" href="/src/critters.css" />
+    <title>Kaboom Critters — Red Haven</title>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="tags" class="tags"></div>
+    <div id="pops" class="pops"></div>
+
+    <!-- ================= MATCH HUD ================= -->
+    <div id="hud" class="hud hidden">
+      <div class="hud-top">
+        <button id="pauseBtn" class="ibtn" aria-label="Pause">☰</button>
+        <div id="teamBars" class="team-bars"></div>
+        <div class="spacer"></div>
+        <div class="timer" id="timer"><b id="timerNum">45</b><small id="timerWho"></small></div>
+        <div class="spacer"></div>
+        <div class="wind" title="Wind"><small id="windTxt">Wind</small><div class="wind-bar"><i id="windL"></i><span></span><i id="windR"></i></div></div>
+        <div class="cam-btns">
+          <button id="camBtn" class="ibtn wide" title="Switch 2D / 3D camera (V)">🎥 3D</button>
+          <button id="spinBtn" class="ibtn hidden" title="Spin the camera (R)">🔄</button>
+          <button id="focusBtn" class="ibtn" title="Back to the action (C)">🎯</button>
+        </div>
+      </div>
+
+      <div id="banner" class="banner"></div>
+      <div id="hint" class="hint"></div>
+      <div id="think" class="think hidden"><span>🤖</span> <b id="thinkTxt">thinking</b><i></i><i></i><i></i></div>
+      <div id="powerBar" class="power hidden"><i id="powerFill"></i><small>POWER</small></div>
+
+      <div class="pad-left" id="padL">
+        <button id="bLeft" class="pbtn" aria-label="Walk left">◀</button>
+        <button id="bRight" class="pbtn" aria-label="Walk right">▶</button>
+        <div class="pad-col">
+          <button id="bJump" class="pbtn small" aria-label="Jump">⤴</button>
+          <button id="bBack" class="pbtn small" aria-label="Back flip">↶</button>
+        </div>
+      </div>
+      <div class="pad-right" id="padR">
+        <button id="bWeapon" class="wbtn" aria-label="Choose weapon"><span class="wi" id="wIcon">🚀</span><span class="wt"><b id="wName">Rocket</b><small id="wAmmo">∞</small></span></button>
+        <button id="bFire" class="fire" aria-label="Fire">FIRE</button>
+      </div>
+
+      <div id="weaponPanel" class="wpanel hidden">
+        <div class="wpanel-card">
+          <div class="wpanel-head"><b>Pick a weapon</b><button id="wClose" class="ibtn" aria-label="Close">✕</button></div>
+          <div class="wgrid" id="wGrid"></div>
+          <p class="wtip" id="wTip"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TITLE ================= -->
+    <section id="title" class="screen title-screen">
+      <a class="home" href="index.html">← Games</a>
+      <div class="title-card">
+        <h1 class="logo" aria-label="Kaboom Critters">
+          <span class="l1"><i>K</i><i>A</i><i>B</i><i>O</i><i>O</i><i>M</i><i>!</i></span>
+          <span class="l2">CRITTERS</span>
+        </h1>
+        <p class="tag">Turn-based critter artillery · blow up the islands · 2D or 3D camera</p>
+        <div class="diff-row" id="diffRow" role="radiogroup" aria-label="CPU difficulty"></div>
+        <nav class="menu">
+          <button id="mCampaign" class="mcard c1"><i>🗺️</i><b>Campaign</b><small>5 stages · 20 battles · bosses</small><em id="mCampProg"></em></button>
+          <button id="mSkirmish" class="mcard c2"><i>⚔️</i><b>Skirmish</b><small>Pick the map, teams &amp; rules</small><em></em></button>
+        </nav>
+        <div class="foot">
+          <button id="mHelp" class="pill">❓ How to play</button>
+          <button id="mSettings" class="pill">⚙️ Settings</button>
+          <button id="mFull" class="pill hidden">⛶ Full screen</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CAMPAIGN ================= -->
+    <section id="campaign" class="screen pick-screen hidden">
+      <div class="pick-head">
+        <button class="back" id="campBack">← Back</button>
+        <h2>Campaign</h2>
+        <div class="diff-row small" id="diffRow2" role="radiogroup" aria-label="CPU difficulty"></div>
+      </div>
+      <div class="camp-body">
+        <div class="stage-tabs" id="stageTabs"></div>
+        <div class="stage-main">
+          <p class="stage-blurb" id="stageBlurb"></p>
+          <div class="level-grid" id="levelGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SKIRMISH ================= -->
+    <section id="skirmish" class="screen pick-screen hidden">
+      <div class="pick-head">
+        <button class="back" id="skBack">← Back</button>
+        <h2>Skirmish</h2>
+        <div class="diff-row small" id="diffRow3" role="radiogroup" aria-label="CPU difficulty"></div>
+      </div>
+      <div class="sk-body">
+        <div class="sk-form" id="skForm"></div>
+        <div class="sk-side">
+          <canvas id="skPreview" width="360" height="160" aria-label="Map preview"></canvas>
+          <div class="sk-map-name" id="skMapName"></div>
+          <button id="skReroll" class="pill">🎲 New map</button>
+          <button id="skStart" class="go big">⚔️ Start battle</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="modal" class="modal hidden"><div class="modal-card" id="modalCard"></div></div>
+    <div id="toasts" class="toasts"></div>
+
+    <div id="rotate" class="rotate" aria-live="polite">
+      <div class="rot-phone">📱</div>
+      <b>Turn your phone sideways</b>
+      <span>Kaboom Critters plays in landscape</span>
+    </div>
+
+    <script type="module" src="/src/critters.js"></script>
+  </body>
+</html>
