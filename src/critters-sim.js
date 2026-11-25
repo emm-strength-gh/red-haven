@@ -611,7 +611,7 @@ function bodyTick(S, b, dt) {
     b.rest = false;
   }
   b.vy -= S.grav * dt;
-  if (b.chute) { if (b.vy < -55) b.vy = -55; b.vx += (S.wind * 40 - b.vx) * Math.min(1, dt * 2); }
+  if (b.chute) { if (b.vy < -150) b.vy = -150; b.vx += (S.wind * 40 - b.vx) * Math.min(1, dt * 2); }
   const sp = Math.hypot(b.vx, b.vy);
   const n = Math.max(1, Math.ceil((sp * dt) / 1.5));
   const sdt = dt / n;
