@@ -902,7 +902,7 @@ function humanInput(dt) {
   if (move || aim) Sim.hurry(S);
   if (move && S.time - Sim.active(S).walkT < 0.05) audio.step();
   if (G.charge) {
-    G.charge.v = Math.min(1, G.charge.v + dt / 1.3);
+    G.charge.v = Math.min(1, G.charge.v + dt / 2.4);
     const c = Sim.active(S);
     if (c) c.power = G.charge.v;
     if (G.charge.v >= 1) { const src = G.charge.src; G.charge = null; if (src === 'btn') fireBtn.classList.remove('held'); doFire(1); }

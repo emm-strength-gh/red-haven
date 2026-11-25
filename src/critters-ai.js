@@ -312,7 +312,7 @@ export function createCpu(S, budgetMs = 7) {
           break;
         }
         case 'charge':
-          api.charge = Math.min(P.power, api.charge + dt / 1.3);
+          api.charge = Math.min(P.power, api.charge + dt / 2.4);
           if (api.charge >= P.power - 1e-6) st.mode = 'fire';
           break;
         case 'fire': {

@@ -158,3 +158,16 @@ test('the menu demo match is two CPU teams', () => {
   assertSpawned(createMatch(cfg), 'demo');
   assert.deepEqual(WEAPON_ORDER, Object.keys(WEAPONS));
 });
+
+test('supply crates parachute down in a few seconds', () => {
+  const S = createMatch(base({ crates: 1 }));
+  fire(S, { weapon: 'skip' });
+  let landed = null;
+  for (let t = 0; t < 20 && landed == null; t += 1 / 60) {
+    step(S, 1 / 60);
+    const k = S.bodies.find((b) => b.kind === 'crate');
+    if (k && k.rest) landed = t;
+  }
+  assert.ok(landed != null, 'a crate dropped and landed');
+  assert.ok(landed < 7, `crate landed after ${landed.toFixed(1)} s`);
+});
