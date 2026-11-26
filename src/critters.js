@@ -18,10 +18,15 @@ const isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in win
 // ------------------------------------------------------------------ save
 const save = loadSave();
 function loadSave() {
-  const base = { diff: 'easy', medals: {}, stage: 0, settings: { sound: true, quality: 'high', guide: true, cam: '2d', sprites: false }, skirmish: { ...SKIRMISH_DEFAULTS }, helped: false };
+  const base = { diff: 'easy', medals: {}, stage: 0, settings: { sound: true, quality: 'high', guide: true, cam: '2d', sprites: true, artPicked: false }, skirmish: { ...SKIRMISH_DEFAULTS }, helped: false };
   try {
     const s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
-    if (s && typeof s === 'object') return { ...base, ...s, settings: { ...base.settings, ...(s.settings || {}) }, skirmish: { ...base.skirmish, ...(s.skirmish || {}) } };
+    if (s && typeof s === 'object') {
+      const out = { ...base, ...s, settings: { ...base.settings, ...(s.settings || {}) }, skirmish: { ...base.skirmish, ...(s.skirmish || {}) } };
+      // 2D sprites are the default art style unless the player picked one themselves
+      if (!out.settings.artPicked) out.settings.sprites = true;
+      return out;
+    }
   } catch { /* broken save: start fresh */ }
   return base;
 }
@@ -762,6 +767,7 @@ function updateCamButtons() {
 /** Switch between the low-poly 3D world and flat 2D sprites. The match itself is untouched. */
 function setSprites(on) {
   save.settings.sprites = on;
+  save.settings.artPicked = true;
   persist();
   spriteCanvas.classList.toggle('hidden', !on);
   if (on) {
